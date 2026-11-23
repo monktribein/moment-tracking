@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Movement Tracking · Admin</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sign in -->
+  <section id="login-view" class="login" hidden>
+    <form id="login-form" class="login-card" novalidate>
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Movement Tracking</div>
+      <h1>Admin sign in</h1>
+      <p class="muted">Live locations, routes and shifts of your field agents.</p>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" id="login-email" autocomplete="username" required>
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </label>
+      <p class="form-message error" id="login-error" role="alert" hidden></p>
+      <button type="submit" class="btn btn-primary btn-block" id="login-submit">Sign in</button>
+    </form>
+  </section>
+
+  <!-- Panel -->
+  <div id="app-view" class="app" hidden>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Movement Tracking</div>
+      <div class="topbar-status">
+        <span id="refresh-status" class="muted" aria-live="polite"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="refresh-btn">Refresh</button>
+      </div>
+      <div class="topbar-user">
+        <span id="admin-name" class="admin-name"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="password-btn">Change password</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout-btn">Sign out</button>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="stats" id="stats" role="tablist" aria-label="Filter agents">
+        <button type="button" class="stat" data-filter="all" role="tab">
+          <span class="stat-value" id="stat-all">0</span><span class="stat-label">All agents</span>
+        </button>
+        <button type="button" class="stat" data-filter="duty" role="tab">
+          <span class="stat-value" id="stat-duty">0</span><span class="stat-label">On duty</span>
+        </button>
+        <button type="button" class="stat stat-live" data-filter="live" role="tab">
+          <span class="stat-value" id="stat-live">0</span><span class="stat-label">Live GPS</span>
+        </button>
+        <button type="button" class="stat stat-alert" data-filter="attention" role="tab">
+          <span class="stat-value" id="stat-attention">0</span><span class="stat-label">On duty, no live GPS</span>
+        </button>
+      </div>
+      <div class="search">
+        <input type="search" id="agent-search" placeholder="Search name, phone, district…" aria-label="Search agents">
+      </div>
+      <ul id="agent-list" class="agent-list" aria-label="Field agents"></ul>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map" aria-label="Map of agent locations"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="dot dot-live"></i>Live (≤15 min)</span>
+        <span><i class="dot dot-recent"></i>Seen ≤2 h</span>
+        <span><i class="dot dot-stale"></i>Older</span>
+        <span><i class="dot dot-nogps"></i>Check-in point, no GPS</span>
+      </div>
+    </main>
+
+    <aside id="detail" class="detail" hidden aria-labelledby="detail-name">
+      <div class="detail-head">
+        <div>
+          <h2 id="detail-name"></h2>
+          <p id="detail-meta" class="muted"></p>
+          <div id="detail-badges" class="badges"></div>
+        </div>
+        <button type="button" class="icon-btn" id="detail-close" aria-label="Close">&times;</button>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab" data-tab="route" role="tab">Route</button>
+        <button type="button" class="tab" data-tab="shifts" role="tab">Shifts</button>
+        <button type="button" class="tab" data-tab="days" role="tab">Days</button>
+      </nav>
+
+      <section class="tab-panel" data-panel="route">
+        <div class="date-bar" id="date-bar">
+          <button type="button" class="icon-btn" id="day-prev" aria-label="Previous day">&lsaquo;</button>
+          <input type="date" id="route-date" aria-label="Day">
+          <button type="button" class="icon-btn" id="day-next" aria-label="Next day">&rsaquo;</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="day-today">Today</button>
+        </div>
+        <div id="shift-bar" class="shift-bar" hidden>
+          <span id="shift-title"></span>
+          <button type="button" class="link-btn" id="shift-back">Back to day view</button>
+        </div>
+        <div id="route-body"></div>
+      </section>
+      <section class="tab-panel" data-panel="shifts"><div id="shifts-body"></div></section>
+      <section class="tab-panel" data-panel="days"><div id="days-body"></div></section>
+    </aside>
+  </div>
+
+  <dialog id="password-dialog" class="dialog">
+    <form id="password-form" novalidate>
+      <h2>Change password</h2>
+      <p class="muted">Other signed-in sessions are signed out.</p>
+      <label class="field">
+        <span>Current password</span>
+        <input type="password" id="pw-current" autocomplete="current-password" required>
+      </label>
+      <label class="field">
+        <span>New password (10+ characters)</span>
+        <input type="password" id="pw-new" autocomplete="new-password" minlength="10" required>
+      </label>
+      <label class="field">
+        <span>Repeat new password</span>
+        <input type="password" id="pw-repeat" autocomplete="new-password" minlength="10" required>
+      </label>
+      <p class="form-message" id="pw-message" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="pw-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="pw-submit">Save password</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
