@@ -1,10 +1,7 @@
-import { dirname, join } from "node:path";
 import { ValidationPipe, VERSION_NEUTRAL, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import compression from "compression";
-import type { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import { Logger } from "nestjs-pino";
 import { ConfigService } from "@nestjs/config";
@@ -26,7 +23,7 @@ async function bootstrap(): Promise<void> {
   // Must run before any model connection exists.
   configureDatabase();
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+  const app = await NestFactory.create(AppModule, {
     bufferLogs: isProduction,
     // Local runs print only warnings, errors and the ready banner below;
     // NEST_LOG=verbose brings the full Nest startup log back.
@@ -46,27 +43,8 @@ async function bootstrap(): Promise<void> {
     startEventLoopMonitor();
   }
   if (!isProduction && process.env.REQUEST_LOG !== "false") app.use(devRequestLogMiddleware());
-  const adminPanel = config.get<boolean>("adminPanelEnabled") ?? true;
-  const apiHelmet = helmet();
-  // The admin panel draws OpenStreetMap tiles: they need an image source the API's
-  // defaults rule out, and OSM's tile policy needs the Referer that "no-referrer" drops.
-  const panelHelmet = helmet({
-    contentSecurityPolicy: {
-      directives: { "img-src": ["'self'", "data:", "https://tile.openstreetmap.org"] },
-    },
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-  });
-  app.use((req: Request, res: Response, next: NextFunction) =>
-    (adminPanel && /^\/admin(\/|$)/.test(req.path) ? panelHelmet : apiHelmet)(req, res, next),
-  );
+  app.use(helmet());
   app.use(compression());
-  if (adminPanel) {
-    // Static files only; every call the panel makes goes through the guarded /api routes.
-    app.useStaticAssets(join(dirname(require.resolve("leaflet/package.json")), "dist"), {
-      prefix: "/admin/vendor/leaflet",
-    });
-    app.useStaticAssets(join(__dirname, "..", "admin"), { prefix: "/admin" });
-  }
   if (config.get<boolean>("trustProxy")) app.getHttpAdapter().getInstance().set("trust proxy", 1);
   app.enableCors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
@@ -120,7 +98,6 @@ async function bootstrap(): Promise<void> {
     process.stdout.write(
       `Movement Tracking API ready: http://localhost:${port}/api\n` +
         `Health check: http://localhost:${port}/api/health\n` +
-        (adminPanel ? `Admin panel: http://localhost:${port}/admin\n` : "") +
         (config.get<boolean>("swaggerEnabled") ? `API docs: http://localhost:${port}/api/docs\n` : ""),
     );
 }

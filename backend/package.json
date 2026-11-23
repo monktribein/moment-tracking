@@ -35,7 +35,6 @@
     "compression": "^1.8.1",
     "drizzle-orm": "^0.45.3",
     "helmet": "^8.1.0",
-    "leaflet": "^1.9.4",
     "mingo": "^7.2.4",
     "mongoose": "^9.11.4",
     "nestjs-pino": "^4.4.1",

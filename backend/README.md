@@ -2,8 +2,8 @@
 
 The Tirvona lead system as its own product: field agents, leads, regions, attendance (check-in /
 check-out), GPS movement tracking and supervisor tools, plus a **Super Admin** who manages
-everything. Its own database, its own deploy. The server also hosts a small **admin panel** at
-`/admin` for watching locations and routes (see below); any other app is built on the API.
+everything. Its own database, its own deploy. No UI here — any app or admin panel is built on
+the API below.
 
 Same stack and code as Tirvona's `Newbackend`: NestJS 11, Postgres through the same model layer
 (`src/database`), the same migration tools. The lead code (`src/modules/lead-collection`) is a copy
@@ -17,7 +17,6 @@ so Tirvona's lead app can point at this server without changes.
 | `src/modules/lead-collection/` | The lead system, copied from Tirvona (see "Differences from Tirvona") |
 | `src/modules/super-admin/` | Super Admin accounts, sign-in, password change |
 | `src/modules/uploads/` | Cloudinary uploads (agent photos / documents) |
-| `admin/` | The admin panel: plain HTML/CSS/JS served at `/admin` (no build step) |
 | `src/database/` | Postgres model layer + `pg/registry.generated.ts` (table map) |
 | `database/` | `migrate.js`, `verify.js`, `generate.js` and `migrations/` |
 | `test/movement-tracking.pg-spec.ts` | Whole-API test on a fresh, throw-away Postgres |
@@ -50,31 +49,6 @@ so Tirvona's lead app can point at this server without changes.
   returns a new token.
 - A Super Admin token never works on field-agent routes, and a field-agent token never works on
   admin routes (separate secrets, issuer, audience and scope).
-
-## Admin panel (`/admin`)
-
-Open `http://localhost:5100/admin` and sign in with the Super Admin email and password.
-
-- **Live map** of every agent's latest GPS position (last 12 hours), refreshed every 30 seconds.
-  Colours: green = live (fix within 15 min), amber = seen within 2 h, grey = older. A hollow blue
-  ring is an agent who checked in but whose phone sends no GPS; it sits at their check-in point.
-- **Counters / filters**: all agents, on duty today, live GPS, and *on duty without live GPS*
-  (the agents to follow up). Click a counter to filter the list; search by name, phone or district.
-- **Agent detail** (click an agent or a map marker):
-  - *Route*: any day's path with start/end, stops, distance, moving and stopped time, and a
-    timeline of trips and stops (click one to zoom to it). Today's route keeps updating.
-  - *Shifts*: the last 31 check-in → check-out shifts with distance; click one for its exact route
-    with the check-in and check-out points.
-  - *Days*: every tracked day (up to 90) with its distance; click one to open it.
-- **Change password** in the top bar.
-
-How it works: the panel is static files in `admin/`; every number comes from the guarded
-`/api/lead-collection/admin/*` routes with the admin's token (kept in the browser tab's session
-storage, so closing the tab signs out). Map tiles come from OpenStreetMap
-(`tile.openstreetmap.org`); the browser needs internet access for them, and heavy use should move
-to a paid tile provider (change the URL in `admin/app.js` and the `img-src` entry in `src/main.ts`).
-`ADMIN_PANEL_ENABLED=false` removes the panel. Edits to `admin/` need no rebuild, only a browser
-refresh.
 
 ## API map
 

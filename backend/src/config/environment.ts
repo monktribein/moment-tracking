@@ -26,8 +26,6 @@ export interface Environment {
   corsOrigins: string[];
   trustProxy: boolean;
   swaggerEnabled: boolean;
-  /** Serves the Super Admin web panel (live map, routes, shifts) at /admin. */
-  adminPanelEnabled: boolean;
   logLevel: string;
   dnsServers: string[];
   throttleTtlMs: number;
@@ -66,7 +64,6 @@ export const environment = (): Environment => ({
   corsOrigins: csv(process.env.CORS_ORIGINS, ""),
   trustProxy: boolean(process.env.TRUST_PROXY, false),
   swaggerEnabled: boolean(process.env.SWAGGER_ENABLED, process.env.NODE_ENV !== "production"),
-  adminPanelEnabled: boolean(process.env.ADMIN_PANEL_ENABLED, true),
   logLevel: process.env.LOG_LEVEL ?? "info",
   dnsServers: csv(process.env.DNS_SERVERS, ""),
   throttleTtlMs: integer(process.env.THROTTLE_TTL_MS, 60_000),
