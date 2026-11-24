@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import L from "leaflet";
-import { ArrowLeft, ChevronLeft, ChevronRight, Crosshair, RefreshCw, Search, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Crosshair, Layers, RefreshCw, Search, X } from "lucide-react";
 import { adminApi } from "../../api";
 import { RoleBadge } from "../../components/badges";
-import { escapeHtml, INDIA, useLeafletMap } from "../../components/useLeafletMap";
+import { clearOverlays, fitMap, htmlMarker, INDIA, mapDot, useGoogleMap, type Overlay } from "../../components/useGoogleMap";
 import { Badge, Button, Empty, ErrorBox, Spinner } from "../../components/ui";
 import {
   addDays,
@@ -82,9 +81,17 @@ function describe(agent: Staff, fix: LiveFix | null, today: AttendanceLog | null
 }
 
 /** Map padding that keeps clear of the detail panel, which covers the map's right side on wide screens. */
-function fitPadding(base: number, panelOpen: boolean): L.FitBoundsOptions {
+function fitPadding(base: number, panelOpen: boolean): google.maps.Padding {
   const covered = panelOpen && window.matchMedia("(min-width: 961px)").matches;
-  return { paddingTopLeft: [base, base], paddingBottomRight: [base + (covered ? 412 : 0), base] };
+  return { top: base, left: base, bottom: base, right: base + (covered ? 412 : 0) };
+}
+
+/** Where an agent shows on the map: the latest GPS fix, else a real check-in point. */
+function pointOf(r: Row): google.maps.LatLngLiteral | null {
+  const p = r.fix ?? r.checkInPoint;
+  if (!p) return null;
+  const point = { lat: Number(p.lat), lng: Number(p.lng) };
+  return Number.isFinite(point.lat) && Number.isFinite(point.lng) ? point : null;
 }
 
 const rank = (r: Row) => (r.live ? 0 : r.attention ? 1 : r.fix ? 2 : r.checkedOut ? 3 : 4);
@@ -186,47 +193,44 @@ export default function Tracking() {
 
   // ── Map ───────────────────────────────────────────────────────────────────
   const mapEl = useRef<HTMLDivElement>(null);
-  const map = useLeafletMap(mapEl);
-  const layers = useRef<{ live: L.LayerGroup; route: L.LayerGroup } | null>(null);
+  const { map, error: mapError } = useGoogleMap(mapEl);
+  const liveLayer = useRef<Overlay[]>([]);
+  const routeLayer = useRef<Overlay[]>([]);
   const fitted = useRef(false);
   const routeKey = useRef("");
+  const [satellite, setSatellite] = useState(false);
 
   useEffect(() => {
-    if (!map) return;
-    layers.current = { route: L.layerGroup().addTo(map), live: L.layerGroup().addTo(map) };
-    return () => {
-      layers.current = null;
-    };
-  }, [map]);
+    map?.setMapTypeId(satellite ? "hybrid" : "roadmap");
+  }, [map, satellite]);
 
   const fitToLive = (force: boolean) => {
     if (!map) return;
-    const points = rows.flatMap((r) => (r.fix ? [L.latLng(r.fix.lat, r.fix.lng)] : r.checkInPoint ? [L.latLng(r.checkInPoint.lat, r.checkInPoint.lng)] : []));
-    if (!points.length) {
-      if (force) map.setView(INDIA.center, INDIA.zoom);
-      return;
+    const points = rows.flatMap((r) => pointOf(r) ?? []);
+    if (!fitMap(map, points, fitPadding(50, Boolean(selected)), points.length === 1 ? 14 : 15) && force) {
+      map.setCenter(INDIA.center);
+      map.setZoom(INDIA.zoom);
     }
-    map.fitBounds(L.latLngBounds(points), { ...fitPadding(50, Boolean(selected)), maxZoom: points.length === 1 ? 14 : 15 });
   };
 
-  // Live markers.
+  // Live markers. Route pins sit above them, route stops below.
   useEffect(() => {
-    const live = layers.current?.live;
-    if (!map || !live) return;
-    live.clearLayers();
+    if (!map) return;
+    clearOverlays(liveLayer.current);
     for (const r of rows) {
-      const point = r.fix ? [r.fix.lat, r.fix.lng] : r.checkInPoint ? [r.checkInPoint.lat, r.checkInPoint.lng] : null;
-      if (!point || !point.every(Number.isFinite)) continue;
+      const point = pointOf(r);
+      if (!point) continue;
       const isSelected = r.id === selected;
       const dim = Boolean(selected) && !isSelected;
-      const marker = L.circleMarker(point as L.LatLngTuple, r.fix
-        ? { radius: isSelected ? 11 : 8, color: "#fff", weight: 2, opacity: dim ? 0.5 : 1, fillColor: COLORS[r.tone], fillOpacity: dim ? 0.35 : 1 }
-        : { radius: isSelected ? 10 : 8, color: COLORS.nogps, weight: 3, opacity: dim ? 0.4 : 1, fillColor: "#fff", fillOpacity: dim ? 0.4 : 1 });
+      const dot = r.fix
+        ? mapDot(isSelected ? 24 : 18, COLORS[r.tone], "#fff", 2, dim ? 0.45 : 1)
+        : mapDot(isSelected ? 23 : 19, "#fff", COLORS.nogps, 3, dim ? 0.4 : 1);
       const when = r.fix ? `GPS ${fmtAgo(r.fix.minutesAgo)}` : `Check-in point, ${fmtTime(r.today?.checkInTime)}`;
-      marker.bindTooltip(`<strong>${escapeHtml(r.agent.name)}</strong><br>${escapeHtml(when)}`, { direction: "top", offset: [0, -8] });
-      marker.on("click", () => update({ agent: r.id, shift: null, date: null, tab: null }, true));
-      marker.addTo(live);
-      if (isSelected) marker.bringToFront();
+      liveLayer.current.push(
+        htmlMarker(map, point, dot, { title: r.agent.name, text: when }, isSelected ? 20 : 10, () =>
+          update({ agent: r.id, shift: null, date: null, tab: null }, true),
+        ),
+      );
     }
     if (!fitted.current && board.data && staff.data) {
       fitted.current = true;
@@ -236,38 +240,33 @@ export default function Tracking() {
 
   // The selected route.
   useEffect(() => {
-    const layer = layers.current?.route;
-    if (!map || !layer) return;
-    layer.clearLayers();
+    if (!map) return;
+    const layer = routeLayer.current;
+    clearOverlays(layer);
     const data = route.data;
     if (!selected || tab !== "route" || !data) return;
     const day = data.day;
-    const bounds = L.latLngBounds([]);
-    const points = (day.route ?? []).filter(hasFix).map((p) => L.latLng(Number(p.lat), Number(p.lng)));
-    if (points.length > 1) L.polyline(points, { color: COLORS.route, weight: 4, opacity: 0.85, lineJoin: "round" }).addTo(layer);
-    points.forEach((p) => bounds.extend(p));
+    const points = (day.route ?? []).filter(hasFix).map((p) => ({ lat: Number(p.lat), lng: Number(p.lng) }));
+    const framed = [...points];
+    if (points.length > 1) layer.push(new google.maps.Polyline({ map, path: points, strokeColor: COLORS.route, strokeWeight: 4, strokeOpacity: 0.85, clickable: false }));
     for (const v of day.visited ?? []) {
       if (!hasFix(v)) continue;
-      L.circleMarker([v.lat, v.lng], { radius: 7, color: "#fff", weight: 2, fillColor: COLORS.stop, fillOpacity: 0.9 })
-        .bindTooltip(escapeHtml(`Stopped ${fmtDuration(v.minutes)} · ${fmtTime(v.arrivedAt)}–${fmtTime(v.leftAt)}`), { direction: "top" })
-        .addTo(layer);
-      bounds.extend([v.lat, v.lng]);
+      const p = { lat: Number(v.lat), lng: Number(v.lng) };
+      layer.push(htmlMarker(map, p, mapDot(16, COLORS.stop, "#fff", 2, 0.9), { text: `Stopped ${fmtDuration(v.minutes)} · ${fmtTime(v.arrivedAt)}–${fmtTime(v.leftAt)}` }, 1));
+      framed.push(p);
     }
-    const pin = (p: L.LatLngExpression, cls: string, text: string, tip: string) => {
-      L.marker(p, {
-        icon: L.divIcon({ className: "", html: `<div class="pin ${cls}">${escapeHtml(text)}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }),
-        zIndexOffset: 1000,
-        keyboard: false,
-      })
-        .bindTooltip(escapeHtml(tip), { direction: "top", offset: [0, -14] })
-        .addTo(layer);
-      bounds.extend(p);
+    const pin = (p: google.maps.LatLngLiteral, cls: string, text: string, tip: string) => {
+      const el = document.createElement("div");
+      el.className = `pin ${cls}`;
+      el.textContent = text;
+      layer.push(htmlMarker(map, p, el, { text: tip }, 30));
+      framed.push(p);
     };
     if (data.kind === "shift") {
       const s = data.shift;
-      if (hasFix(s.checkIn)) pin([Number(s.checkIn.lat), Number(s.checkIn.lng)], "pin-in", "IN", `Checked in ${fmtTime(s.checkIn.at)}`);
+      if (hasFix(s.checkIn)) pin({ lat: Number(s.checkIn.lat), lng: Number(s.checkIn.lng) }, "pin-in", "IN", `Checked in ${fmtTime(s.checkIn.at)}`);
       else if (points.length) pin(points[0], "pin-start", "S", `First point ${fmtTime(day.startedAt)}`);
-      if (s.checkOut && hasFix(s.checkOut)) pin([Number(s.checkOut.lat), Number(s.checkOut.lng)], "pin-out", "OUT", `Checked out ${fmtTime(s.checkOut.at)}`);
+      if (s.checkOut && hasFix(s.checkOut)) pin({ lat: Number(s.checkOut.lat), lng: Number(s.checkOut.lng) }, "pin-out", "OUT", `Checked out ${fmtTime(s.checkOut.at)}`);
       else if (points.length > 1) pin(points[points.length - 1], "pin-end", "E", `${s.onDuty ? "Latest" : "Last point"} ${fmtTime(day.endedAt)}`);
     } else if (points.length) {
       pin(points[0], "pin-start", "S", `Start ${fmtTime(day.startedAt)}`);
@@ -275,9 +274,9 @@ export default function Tracking() {
     }
     // Frame the route when a new one opens, not on every quiet refresh.
     const key = `${selected}|${shiftId ?? routeDate}`;
-    if (routeKey.current !== key && bounds.isValid()) {
+    if (routeKey.current !== key && framed.length) {
       routeKey.current = key;
-      map.fitBounds(bounds, { ...fitPadding(60, true), maxZoom: 16 });
+      fitMap(map, framed, fitPadding(60, true), 16);
     }
   }, [map, route.data, selected, tab, shiftId, routeDate]);
 
@@ -289,12 +288,12 @@ export default function Tracking() {
     if (!map) return;
     const start = new Date(leg.startedAt).getTime();
     const end = new Date(leg.endedAt).getTime();
-    const bounds = L.latLngBounds([leg.from, leg.to]);
+    const points = [leg.from, leg.to].filter(hasFix).map((p) => ({ lat: Number(p.lat), lng: Number(p.lng) }));
     for (const p of route.data?.day.route ?? []) {
       const t = new Date(p.recordedAt).getTime();
-      if (t >= start && t <= end && hasFix(p)) bounds.extend([p.lat, p.lng]);
+      if (t >= start && t <= end && hasFix(p)) points.push({ lat: Number(p.lat), lng: Number(p.lng) });
     }
-    map.fitBounds(bounds, { ...fitPadding(80, true), maxZoom: leg.kind === "stop" ? 17 : 16 });
+    fitMap(map, points, fitPadding(80, true), leg.kind === "stop" ? 17 : 16);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -363,9 +362,20 @@ export default function Tracking() {
 
       <div className="tracking-map">
         <div ref={mapEl} className="map" />
-        <button type="button" className="map-button" onClick={() => fitToLive(true)}>
-          <Crosshair size={15} /> Show everyone
-        </button>
+        {mapError ? (
+          <div className="map-error" role="alert">
+            {mapError}
+          </div>
+        ) : (
+          <div className="map-tools">
+            <button type="button" className="map-button" onClick={() => fitToLive(true)}>
+              <Crosshair size={15} /> Show everyone
+            </button>
+            <button type="button" className={`map-button${satellite ? " active" : ""}`} aria-pressed={satellite} onClick={() => setSatellite((s) => !s)}>
+              <Layers size={15} /> Satellite
+            </button>
+          </div>
+        )}
         <div className="map-legend">
           <span><i className="dot dot-live" /> Live</span>
           <span><i className="dot dot-recent" /> Last 2 h</span>

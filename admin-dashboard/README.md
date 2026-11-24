@@ -10,8 +10,8 @@ serves no pages. It has two sign-ins:
 
 Field agents and document verifiers use the mobile app, not this dashboard.
 
-Stack: React 19, TypeScript, Vite, React Router (hash routes, so any static host works), Leaflet
-with OpenStreetMap tiles for the maps.
+Stack: React 19, TypeScript, Vite, React Router (hash routes, so any static host works), Google
+Maps JavaScript API for the Live tracking map.
 
 ## Run locally
 
@@ -26,6 +26,19 @@ npm run dev        # http://localhost:5173
 To use another API, copy `.env.example` to `.env` and set `VITE_API_URL` (it must end in `/api`).
 Outside production, the backend accepts any `http://localhost:*` origin, so no CORS change is needed
 locally.
+
+## Google Maps key
+
+Live tracking needs a Google Maps key in `VITE_GOOGLE_MAPS_API_KEY` (in `.env` locally, and in the
+host's environment variables for the deployed dashboard). In Google Cloud Console:
+
+1. Enable **Maps JavaScript API** for the project, with billing turned on.
+2. Restrict the key to **Websites**: add `http://localhost:5173/*` and your dashboard's address,
+   e.g. `https://moment-tracking.vercel.app/*`, and limit it to the Maps JavaScript API.
+
+The key ships inside the page, so the website restriction is what stops others from using it.
+Markers use Google's `DEMO_MAP_ID` unless you set your own map ID in `VITE_GOOGLE_MAPS_MAP_ID`.
+If the key is missing or refused, the map shows a message saying so.
 
 ## Create a lead executive
 
@@ -44,10 +57,11 @@ still pending review. The Super Admin can assign any active field agent at any t
 | Build Command | `npm ci && npm run build` |
 | Publish Directory | `dist` |
 | Environment variable | `VITE_API_URL` = your API's URL + `/api`, e.g. `https://movement-tracking-api.onrender.com/api` |
+| Environment variable | `VITE_GOOGLE_MAPS_API_KEY` = your Google Maps key (see above) |
 
 Then add the dashboard's address (e.g. `https://movement-tracking-dashboard.onrender.com`) to the
 backend's `CORS_ORIGINS` and redeploy the backend; without it the browser blocks every request.
-`VITE_API_URL` is built into the files, so changing it needs a new deploy of the dashboard.
+`VITE_*` values are built into the files, so changing one needs a new deploy of the dashboard.
 
 ## Checks
 
