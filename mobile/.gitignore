@@ -1,0 +1,57 @@
+# Flutter app. android/ and ios/ hold real code (voice notes, icons,
+# permissions) and must be committed; android/.gitignore keeps the signing
+# key (key.properties, *.jks) out.
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Flutter / Dart / Pub
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+app.*.symbols
+app.*.map.json
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Left over from the old Expo app
+node_modules/
+
+# Keys and local secrets: never commit
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+.env
+.env.*
+!.env.example
+
+# Local Claude Code settings
+.claude/
