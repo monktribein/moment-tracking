@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
@@ -16,7 +18,7 @@ import { LeadsService } from "../application/leads.service";
 import { LeadUsersService } from "../application/lead-users.service";
 import type { AuthenticatedLeadUser } from "../domain/lead-collection.types";
 import { CurrentLeadAgent } from "./decorators/current-lead-agent.decorator";
-import { LeadQueryDto, SaveLeadDto } from "./dtos/lead.dto";
+import { AssignLeadDto, LeadQueryDto, SaveLeadDto } from "./dtos/lead.dto";
 import { LeadAgentGuard } from "./guards/lead-agent.guard";
 
 @ApiTags("Lead Collection")
@@ -108,6 +110,31 @@ export class LeadAgentController {
       success: true,
       message: "Lead updated",
       data: await this.leads.update(id, dto, this.scope(agent), agent),
+    };
+  }
+
+  /**
+   * Lead executives and supervisors: assign a pending lead to a field agent of
+   * their own district (`{ agentId: null }` unassigns).
+   */
+  @Post(":id/assign")
+  @HttpCode(200)
+  async assign(
+    @CurrentLeadAgent() agent: AuthenticatedLeadUser,
+    @Param("id") id: string,
+    @Body() dto: AssignLeadDto,
+  ) {
+    if (!LeadsService.canAssign(agent.role))
+      throw new ForbiddenException("Only lead executives and supervisors can assign leads");
+    return {
+      success: true,
+      message: dto.agentId ? "Lead assigned" : "Lead unassigned",
+      data: await this.leads.assign(
+        id,
+        dto.agentId,
+        { name: agent.name, role: agent.role },
+        { scope: this.scope(agent), district: agent.district },
+      ),
     };
   }
 

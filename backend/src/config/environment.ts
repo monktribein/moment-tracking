@@ -17,7 +17,7 @@ const csv = (value: string | undefined, fallback: string): string[] =>
 /**
  * Settings read through ConfigService. The field-agent (lead) settings —
  * LEAD_JWT_*, LEAD_BCRYPT_ROUNDS, LEAD_AUTO_CHECKOUT_ENABLED — are read by
- * modules/lead-collection itself, exactly as in Tirvona.
+ * modules/lead-collection itself (see its config/lead-collection.config.ts).
  */
 export interface Environment {
   nodeEnv: string;

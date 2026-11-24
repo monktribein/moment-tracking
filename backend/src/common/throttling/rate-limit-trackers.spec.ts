@@ -26,7 +26,7 @@ describe("hybrid rate-limit trackers", () => {
     expect(ipRateLimitTracker(request())).toBe("ip:203.0.113.10");
   });
 
-  it("gives LeadTirvona agents independent buckets on the same IP", () => {
+  it("gives field agents independent buckets on the same IP", () => {
     expect(
       hybridRateLimitTracker(request({ rateLimitLeadUserId: "lead-1" })),
     ).not.toBe(

@@ -170,11 +170,17 @@ export class LeadSupervisorController {
     return {
       success: true,
       message: "Lead updated successfully",
-      data: await this.leads.update(leadId, dto, {
-        capturedBy: agentId,
-        state: supervisor.state,
-        district: supervisor.district,
-      }),
+      data: await this.leads.update(
+        leadId,
+        dto,
+        {
+          capturedBy: agentId,
+          state: supervisor.state,
+          district: supervisor.district,
+        },
+        // The supervisor is the editor: recorded on the lead, and may reassign it.
+        supervisor,
+      ),
     };
   }
 

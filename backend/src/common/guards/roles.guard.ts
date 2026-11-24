@@ -6,7 +6,7 @@ import type { AuthenticatedUser } from "../decorators/current-user.decorator";
 
 /**
  * @Roles(...) check for console (admin) routes. A Super Admin passes every role
- * check, as in Tirvona; any other role must be listed.
+ * check; any other role must be listed.
  */
 @Injectable()
 export class RolesGuard implements CanActivate {

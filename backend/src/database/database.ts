@@ -9,10 +9,10 @@ import { enablePostgresDriver } from "./pg/pg-driver";
 
 /**
  * Logical database name of the one model connection (the lead connection). It
- * maps to the Postgres schema "leads" (see the registry). The name is kept as in
- * Tirvona so the copied lead code and table layout stay identical.
+ * maps to the Postgres schema "leads" (see the registry). Only the code uses this
+ * name; the tables themselves live in schema "leads".
  */
-export const LEAD_DATABASE = "tirvona_leads";
+export const LEAD_DATABASE = "movement_tracking";
 
 /**
  * The connection string the model layer is given. The Postgres driver ignores it —

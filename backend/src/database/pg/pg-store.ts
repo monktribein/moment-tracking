@@ -80,7 +80,7 @@ export class PgStore {
     }
     if (problems.length) {
       throw new Error(
-        `Postgres schema does not match the Tirvona driver (${problems.length} problem(s)); ` +
+        `Postgres schema does not match the model registry (${problems.length} problem(s)); ` +
           `run npm run db:verify / npm run db:migrate. First: ${problems.slice(0, 5).join("; ")}`,
       );
     }

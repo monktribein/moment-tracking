@@ -12,6 +12,7 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from "class-validator";
 import { IsEntityId } from "../../../../common/decorators/is-entity-id.decorator";
@@ -90,6 +91,11 @@ export class SaveLeadDto {
   @IsString({ each: true })
   @MaxLength(1_500_000, { each: true })
   images?: string[];
+  /**
+   * Field agent to assign ("" unassigns). Only lead executives, supervisors and
+   * the Super Admin may change it. The agent's name and code are read from their
+   * account; assignedAgentName / assignedAgentCode sent here are ignored.
+   */
   @IsOptional() @IsString() assignedAgentId?: string;
   @IsOptional() @IsString() @MaxLength(120) assignedAgentName?: string;
   @IsOptional() @IsString() @MaxLength(120) assignedAgentCode?: string;
@@ -118,6 +124,13 @@ export class SaveLeadDto {
 
 export class LeadDecisionDto {
   @IsOptional() @IsString() @MaxLength(1000) note?: string;
+}
+
+export class AssignLeadDto {
+  /** The field agent to assign the lead to; null removes the assignment. */
+  @ValidateIf((dto: AssignLeadDto) => dto.agentId !== null)
+  @IsEntityId()
+  agentId!: string | null;
 }
 
 export class LeadQueryDto {

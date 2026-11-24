@@ -2,7 +2,7 @@
   "name": "movement-tracking-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Movement Tracking API: field agents, leads, attendance and GPS movement tracking, with a Super Admin console API. Copied from the Tirvona lead system.",
+  "description": "Movement Tracking API: field agents, leads, attendance and GPS movement tracking, with a Super Admin console API.",
   "scripts": {
     "build": "nest build",
     "start": "nest start",

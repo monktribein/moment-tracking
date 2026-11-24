@@ -1,20 +1,19 @@
 # Movement Tracking — backend
 
-The Tirvona lead system as its own product: field agents, leads, regions, attendance (check-in /
-check-out), GPS movement tracking and supervisor tools, plus a **Super Admin** who manages
-everything. Its own database, its own deploy. No UI here — any app or admin panel is built on
-the API below.
+The Movement Tracking API: field agents, leads, regions, attendance (check-in / check-out), GPS
+movement tracking and supervisor tools, plus a **Super Admin** who manages everything. No UI
+here: the web dashboard lives in `../admin-dashboard` and the field app is built separately, both
+on the API below.
 
-Same stack and code as Tirvona's `Newbackend`: NestJS 11, Postgres through the same model layer
-(`src/database`), the same migration tools. The lead code (`src/modules/lead-collection`) is a copy
-of Tirvona's (commit `4f9aed6`, 2026-11-20), and the routes are the same (`/api/lead-collection/...`),
-so Tirvona's lead app can point at this server without changes.
+Stack: NestJS 11 and Postgres (Supabase) through the model layer in `src/database`, with its own
+migration tools in `database/`. Every route lives under `/api`; the lead system's routes are
+`/api/lead-collection/...`.
 
 ## Folders
 
 | Path | What it is |
 | --- | --- |
-| `src/modules/lead-collection/` | The lead system, copied from Tirvona (see "Differences from Tirvona") |
+| `src/modules/lead-collection/` | The lead system: leads, field agents, regions, attendance, GPS tracking, supervisors |
 | `src/modules/super-admin/` | Super Admin accounts, sign-in, password change |
 | `src/modules/uploads/` | Cloudinary uploads (agent photos / documents) |
 | `src/database/` | Postgres model layer + `pg/registry.generated.ts` (table map) |
@@ -24,10 +23,10 @@ so Tirvona's lead app can point at this server without changes.
 ## First run (local)
 
 1. **Create the database.** A new Supabase project (use its *Session pooler* URL, port 5432) or a
-   local Postgres database. It must be a new, empty database — not Tirvona's.
-2. **Settings.** `.env` is already filled in (new secrets, the Super Admin login, the Cloudinary
-   keys from Tirvona). Put the new database URL in `SUPABASE_DB_URL`. `.env.example` lists every
-   setting with an explanation.
+   local Postgres database. It must be a new, empty database.
+2. **Settings.** Copy `.env.example` to `.env` and fill it in: the database URL in
+   `SUPABASE_DB_URL`, two random secrets, the first Super Admin login and the Cloudinary keys.
+   `.env.example` explains every setting. Never commit `.env`.
 3. **Install and create the tables:**
    ```bash
    npm install
@@ -61,7 +60,7 @@ are rejected.
 
 | Area | Routes |
 | --- | --- |
-| Leads | `GET leads`, `GET leads/stats`, `GET leads/:id`, `POST leads`, `PUT leads/:id`, `DELETE leads/:id`, `POST leads/:id/approve` · `reject` · `convert` · `reopen` (`{ note }`) |
+| Leads | `GET leads`, `GET leads/stats`, `GET leads/:id`, `POST leads`, `PUT leads/:id`, `DELETE leads/:id`, `POST leads/:id/assign` (`{ agentId }`, `null` unassigns), `POST leads/:id/approve` · `reject` · `convert` · `reopen` (`{ note }`) |
 | Regions | `GET regions`, `POST regions` (`{ state, district }`), `DELETE regions?state=&district=` |
 | Field agents | `GET users`, `GET users/:id`, `POST users`, `PUT users/:id`, `POST users/:id/reset-password`, `DELETE users/:id` |
 | Attendance | `GET attendance/summary`, `GET attendance/agent/:id` |
@@ -72,7 +71,7 @@ are rejected.
 | Area | Routes |
 | --- | --- |
 | Sign-in | `POST /api/lead-collection/auth/login` (`{ phone, password }`), `GET /api/lead-collection/auth/me` |
-| Leads | `/api/lead-collection/agent/leads`: `GET`, `GET stats`, `GET field-agents`, `GET :id`, `POST`, `PUT :id`, `DELETE :id` |
+| Leads | `/api/lead-collection/agent/leads`: `GET`, `GET stats`, `GET field-agents`, `GET :id`, `POST`, `PUT :id`, `DELETE :id`, `POST :id/assign` (lead executives and supervisors) |
 | Attendance | `/api/lead-collection/agent/attendance`: `POST check-in` (`{ coords: { lat, lng, accuracy } }`), `POST check-out`, `GET today`, `GET history` |
 | Tracking | `/api/lead-collection/agent/tracking`: `GET`/`POST consent`, `POST fixes` (batch of up to 100 GPS points, `recordedAt` in UTC ISO), `GET today`, `GET day`, `GET history` |
 | Uploads | `POST /api/lead-collection/agent/uploads` (multipart `file`) |
@@ -83,13 +82,28 @@ are rejected.
 `GET attendance/summary`, `GET agents/:agentId/attendance`, `GET agents/:agentId/shifts/:attendanceId/route`,
 `GET agents/:agentId/tracking`, `GET agents/:agentId/tracking/history`, `GET tracking/live`.
 
-Rules carried over from Tirvona: check-in needs GPS coordinates; shifts left open are closed 9 hours
+**Lead executives** (agent token with role `lead_executive`) sign in like field agents
+(`POST /api/lead-collection/auth/login`), add leads with `POST /agent/leads` and assign them to a
+field agent: `assignedAgentId` on create / update, or `POST /agent/leads/:id/assign` with
+`{ agentId }` (`null` unassigns). `GET /agent/leads/field-agents` lists who they can choose.
+
+Assignment rules:
+- Only lead executives, supervisors and the Super Admin assign. A field agent who sends a different
+  `assignedAgentId` gets 403; sending the current one back unchanged is fine.
+- The assignee must be an active `field_agent`. Lead executives and supervisors may only pick agents
+  of their own district, and only while the lead is `pending`.
+- The assignee's name and code are read from their account (`assignedAgentName` /
+  `assignedAgentCode` sent by a client are ignored).
+- A field agent sees their own and their assigned leads in any district, and can delete only leads
+  they added themselves.
+
+Rules: check-in needs GPS coordinates; shifts left open are closed 9 hours
 after check-in (`LEAD_AUTO_CHECKOUT_ENABLED=false` turns this off); raw GPS points are kept 180 days.
 
 ## Deploying (separate server)
 
 1. Server env: everything in `.env.example`, with `NODE_ENV=production`, the production database
-   URL, `CORS_ORIGINS` (the web app's URL(s); required), `TRUST_PROXY=true` behind nginx, and
+   URL, `CORS_ORIGINS` (the web dashboard's URL(s); required), `TRUST_PROXY=true` behind nginx, and
    `SWAGGER_ENABLED=false` if the docs should not be public. `JWT_SECRET` and `LEAD_JWT_SECRET`
    must be 32+ characters (the API refuses to start otherwise).
 2. Each deploy:
@@ -113,18 +127,3 @@ and `npm run db:migrate`. Migrations only add — never drop or alter.
 npm run lint && npm run typecheck && npm test
 npm run test:pg        # starts its own throw-away Postgres
 ```
-
-## Differences from Tirvona
-
-Only these lead files differ from Tirvona's copy:
-
-- `lead-collection.module.ts` — imports `SuperAdminModule` instead of Tirvona's `HrLocationModule`
-  and `AshramsModule`.
-- `presentation/lead-admin.controller.ts` — area scope from `AdminScopeService` (Super Admin sees
-  everything) instead of Tirvona's HR-office scope.
-- `application/lead-users.service.ts` — regions are the built-in list plus the custom catalogue
-  (Tirvona also added districts of its stays, which do not exist here).
-
-Everything else in `src/modules/lead-collection` is unchanged, so fixes made in Tirvona can be
-copied across file by file. The five lead tables have the same columns as Tirvona's `leads`
-schema, so existing Tirvona lead data could be copied over later if wanted (not done).

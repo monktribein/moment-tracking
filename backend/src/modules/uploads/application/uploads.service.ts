@@ -83,7 +83,7 @@ export class UploadsService {
       const result: any = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           {
-            folder: `${this.config.get<string>("cloudinaryFolder") ?? "tirvona"}/${safeFolder}`,
+            folder: `${this.config.get<string>("cloudinaryFolder") ?? "movement-tracking"}/${safeFolder}`,
             resource_type:
               detected.kind === "pdf"
                 ? "raw"

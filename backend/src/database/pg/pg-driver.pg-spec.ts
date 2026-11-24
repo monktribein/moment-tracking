@@ -8,7 +8,7 @@ import { createTestDatabase } from "./test-database";
 
 const REGISTRY: Registry = {
   version: 1,
-  databases: { "": "public", tirvona_leads: "leads" },
+  databases: { "": "public", movement_tracking: "leads" },
   tables: [
     {
       database: "test",
@@ -67,7 +67,7 @@ const REGISTRY: Registry = {
       indexes: [{ name: "roomId_1_date_1", keys: { roomId: 1, date: 1 }, unique: true, enforced: true }],
     },
     {
-      database: "tirvona_leads",
+      database: "movement_tracking",
       collection: "leads",
       schema: "leads",
       table: "leads",
@@ -334,7 +334,7 @@ describe("Postgres storage driver for Mongoose", () => {
   });
 
   it("routes other MongoDB databases to their Postgres schema", async () => {
-    const conn = await mongoose.createConnection("postgres://ignored", { dbName: "tirvona_leads" }).asPromise();
+    const conn = await mongoose.createConnection("postgres://ignored", { dbName: "movement_tracking" }).asPromise();
     const Lead = conn.model("Lead", new Schema({ title: String }, { collection: "leads" }));
     await Lead.create({ title: "hello" });
     const r = await db.pool.query("SELECT title FROM leads.leads");

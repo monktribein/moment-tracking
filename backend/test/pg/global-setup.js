@@ -22,10 +22,10 @@ module.exports = async () => {
   if (process.env.PG_TEST_URL) return;
   const EmbeddedPostgres = (await import("embedded-postgres")).default;
   const port = await freePort();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "tirvona-pg-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mt-pg-"));
   const pg = new EmbeddedPostgres({ databaseDir: dir, user: "postgres", password: "postgres", port, persistent: true, initdbFlags: ["--encoding=UTF8", "--locale=C"], onLog: () => {}, onError: () => {} });
   await pg.initialise();
   await pg.start();
-  globalThis.__TIRVONA_EMBEDDED_PG__ = { pg, dir };
+  globalThis.__MT_EMBEDDED_PG__ = { pg, dir };
   process.env.PG_TEST_URL = `postgres://postgres:postgres@localhost:${port}/postgres?sslmode=disable`;
 };

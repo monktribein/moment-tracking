@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 module.exports = async () => {
-  const embedded = globalThis.__TIRVONA_EMBEDDED_PG__;
+  const embedded = globalThis.__MT_EMBEDDED_PG__;
   if (!embedded) return;
   await embedded.pg.stop();
   try {

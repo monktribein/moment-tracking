@@ -192,6 +192,75 @@ describe("Movement Tracking API on a fresh database (real Postgres)", () => {
     expect(JSON.stringify(live.body.data)).toContain(agentId);
   });
 
+  it("lets a lead executive add a lead and assign it to a field agent of their district", async () => {
+    const EXEC = { ...AGENT, name: "Test Executive", phone: "9876500003", password: "Exec-Pass-12", role: "lead_executive" };
+    const FAR = { name: "Far Agent", phone: "9876500004", password: "Far-Pass-123", state: "Uttarakhand", district: "Dehradun" };
+    const execId = String(ok(await asAdmin(http().post("/api/lead-collection/admin/users")).send(EXEC)).body.data._id);
+    const farId = String(ok(await asAdmin(http().post("/api/lead-collection/admin/users")).send(FAR)).body.data._id);
+    const signIn = async (who: { phone: string; password: string }) =>
+      ok(await http().post("/api/lead-collection/auth/login").send({ phone: who.phone, password: who.password })).body.data
+        .token as string;
+    const execToken = await signIn(EXEC);
+    const farToken = await signIn(FAR);
+    const asExec = (req: request.Test) => req.set("Authorization", `Bearer ${execToken}`);
+    const asFar = (req: request.Test) => req.set("Authorization", `Bearer ${farToken}`);
+    const ids = (res: request.Response) => res.body.data.items.map((l: any) => String(l._id));
+
+    // The executive chooses from the field agents of their own district.
+    const agents = ok(await asExec(http().get("/api/lead-collection/agent/leads/field-agents")));
+    expect(agents.body.data.map((a: any) => String(a._id))).toEqual([agentId]);
+
+    // The assignee's name is read from their account, never taken from the request.
+    const created = ok(
+      await asExec(http().post("/api/lead-collection/agent/leads")).send({
+        name: "Assigned Homestay",
+        contact: { ownerName: "Test Host", phone: "9876500005" },
+        assignedAgentId: agentId,
+        assignedAgentName: "Someone Else",
+      }),
+    );
+    const leadId = String(created.body.data._id);
+    expect(String(created.body.data.assignedAgentId)).toBe(agentId);
+    expect(created.body.data).toMatchObject({
+      assignedAgentName: AGENT.name,
+      capturedByName: EXEC.name,
+      status: "pending",
+      location: { state: AGENT.state, district: AGENT.district },
+    });
+    expect(ids(ok(await asExec(http().get("/api/lead-collection/agent/leads"))))).toContain(leadId);
+
+    // The field agent sees the lead assigned to them.
+    expect(ids(ok(await asAgent(http().get("/api/lead-collection/agent/leads"))))).toContain(leadId);
+    ok(await asAgent(http().get(`/api/lead-collection/agent/leads/${leadId}`)));
+
+    // Refused: another district, a field agent assigning or deleting, a bad id, a non-agent assignee.
+    const assignUrl = `/api/lead-collection/agent/leads/${leadId}/assign`;
+    await asExec(http().post(assignUrl)).send({ agentId: farId }).expect(403);
+    await asAgent(http().post(assignUrl)).send({ agentId: null }).expect(403);
+    await asAgent(http().put(`/api/lead-collection/agent/leads/${leadId}`)).send({ assignedAgentId: farId }).expect(403);
+    await asAgent(http().post("/api/lead-collection/agent/leads")).send({ name: "Self Assigned", assignedAgentId: farId }).expect(403);
+    await asAgent(http().delete(`/api/lead-collection/agent/leads/${leadId}`)).expect(403);
+    await asExec(http().post(assignUrl)).send({ agentId: "not-an-id" }).expect(400);
+    await asExec(http().post(assignUrl)).send({}).expect(400);
+    await asAdmin(http().post(`/api/lead-collection/admin/leads/${leadId}/assign`)).send({ agentId: execId }).expect(400);
+
+    // A full-object save that sends the same assignee back is still fine for the field agent.
+    ok(await asAgent(http().put(`/api/lead-collection/agent/leads/${leadId}`)).send({ assignedAgentId: agentId, agentNotes: "Visited" }));
+
+    // The Super Admin may assign across districts; that agent then sees the lead.
+    const moved = ok(await asAdmin(http().post(`/api/lead-collection/admin/leads/${leadId}/assign`)).send({ agentId: farId }));
+    expect(moved.body.data).toMatchObject({ assignedAgentName: FAR.name, lastUpdatedByRole: "super_admin" });
+    expect(ids(ok(await asFar(http().get("/api/lead-collection/agent/leads"))))).toEqual([leadId]);
+    ok(await asFar(http().get(`/api/lead-collection/agent/leads/${leadId}`)));
+    expect(ok(await asFar(http().get("/api/lead-collection/agent/leads/stats"))).body.data.total).toBe(1);
+
+    // The executive can unassign it and assign it back.
+    const cleared = ok(await asExec(http().post(assignUrl)).send({ agentId: null }));
+    expect(cleared.body.data).toMatchObject({ assignedAgentId: null, assignedAgentName: "" });
+    const back = ok(await asExec(http().post(assignUrl)).send({ agentId }));
+    expect(back.body.data).toMatchObject({ assignedAgentName: AGENT.name, lastUpdatedByName: EXEC.name });
+  });
+
   it("signs out every old Super Admin session when the password changes", async () => {
     const oldToken = adminToken;
     await asAdmin(http().post("/api/auth/change-password")).send({ currentPassword: "wrong", newPassword: "Second-Pass-5678" }).expect(400);

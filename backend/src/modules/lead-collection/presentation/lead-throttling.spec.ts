@@ -4,7 +4,7 @@ import { LeadAuthController } from "./lead-auth.controller";
 import { LeadSupervisorController } from "./lead-supervisor.controller";
 import { LeadUploadController } from "./lead-upload.controller";
 
-describe("LeadTirvona throttling", () => {
+describe("Lead throttling", () => {
   const controllers = [
     LeadAuthController,
     LeadAgentController,

@@ -22,7 +22,7 @@ import {
   locationMatches,
   type LocationScope,
 } from "../../../common/auth/location-scope";
-// Movement Tracking: Super Admin scope in place of Tirvona's HrLocationService (same scopeFor contract).
+// Area scope of the signed-in admin: a Super Admin sees every record.
 import { AdminScopeService } from "../../super-admin/application/admin-scope.service";
 import {
   LeadUsersService,
@@ -38,7 +38,7 @@ import {
   ResetLeadUserPasswordDto,
   UpdateLeadUserDto,
 } from "./dtos/lead-user.dto";
-import { LeadDecisionDto, LeadQueryDto, SaveLeadDto } from "./dtos/lead.dto";
+import { AssignLeadDto, LeadDecisionDto, LeadQueryDto, SaveLeadDto } from "./dtos/lead.dto";
 import { AttendanceQueryDto } from "./dtos/lead-attendance.dto";
 import {
   TrackingDayQueryDto,
@@ -139,6 +139,22 @@ export class LeadAdminController {
       success: true,
       message: "Lead updated",
       data: await this.leads.update(id, dto),
+    };
+  }
+
+  /** Assign the lead to any active field agent (`{ agentId: null }` unassigns). */
+  @Post("leads/:id/assign")
+  @HttpCode(200)
+  async assignLead(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+    @Body() dto: AssignLeadDto,
+  ) {
+    await this.scopedLead(user, id);
+    return {
+      success: true,
+      message: dto.agentId ? "Lead assigned" : "Lead unassigned",
+      data: await this.leads.assign(id, dto.agentId, { name: user.name, role: user.role }),
     };
   }
 

@@ -17,7 +17,7 @@ describe("configureDatabase", () => {
     expect(options.connectionString).toBe("postgres://u:p@host:5432/postgres");
     expect(options.poolMax).toBe(10);
     expect(options.ttlSweep).toBe(false);
-    expect(options.registry.databases).toEqual({ tirvona_leads: "leads" });
+    expect(options.registry.databases).toEqual({ movement_tracking: "leads" });
     expect(options.registry.tables.map((t) => t.table).sort()).toEqual(
       ["admin_users", "lead_attendances", "lead_location_pings", "lead_regions", "lead_users", "leads"],
     );

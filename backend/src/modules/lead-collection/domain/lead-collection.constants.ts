@@ -21,6 +21,12 @@ export const LEAD_USER_ROLES = [
 ] as const;
 export type LeadUserRole = (typeof LEAD_USER_ROLES)[number];
 
+/**
+ * Lead users who may assign a lead to a field agent (only agents of their own
+ * district). The Super Admin may assign any field agent.
+ */
+export const LEAD_ASSIGNER_ROLES: readonly LeadUserRole[] = ["lead_executive", "field_supervisor"];
+
 export const LEAD_USER_STATUSES = ["active", "suspended"] as const;
 
 export const LEAD_STATUSES = [

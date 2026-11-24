@@ -57,20 +57,19 @@ export class LeadUsersService {
   }
 
   async listRegions(): Promise<
-    { state: string; district: string; source: "tirvona" | "custom" }[]
+    { state: string; district: string; source: "builtin" | "custom" }[]
   > {
-    // Movement Tracking has no Tirvona stays to draw districts from: the built-in
-    // regions (source "tirvona", kept for API compatibility) plus the custom catalogue.
+    // The built-in regions (source "builtin") plus the custom catalogue.
     const customRows = await this.regions.find().select("state district").lean();
     const merged = new Map<
       string,
-      { state: string; district: string; source: "tirvona" | "custom" }
+      { state: string; district: string; source: "builtin" | "custom" }
     >();
     for (const def of DEFAULT_LEAD_REGIONS) {
       merged.set(`${def.state}|${def.district}`.toLowerCase(), {
         state: def.state,
         district: def.district,
-        source: "tirvona",
+        source: "builtin",
       });
     }
     for (const row of customRows as any[]) {

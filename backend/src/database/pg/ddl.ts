@@ -88,7 +88,7 @@ export function tableDdl(t: TableDef, warnings: string[] = []): string {
   for (const c of t.columns) colLines.push(`  ${qi(c.column)} ${columnType(c.kind)}`);
   colLines.push(`  ${qi("_nulls")} text[]`, `  ${qi("_extra")} jsonb`);
   lines.push(`CREATE TABLE ${fq} (\n${colLines.join(",\n")}\n);`);
-  lines.push(`COMMENT ON TABLE ${fq} IS ${lit(`Tirvona model collection ${t.collection}. Layout: src/database/pg/registry.generated.ts`)};`);
+  lines.push(`COMMENT ON TABLE ${fq} IS ${lit(`Model collection ${t.collection}. Layout: src/database/pg/registry.generated.ts`)};`);
   for (const c of t.columns) if (c.column !== c.field) lines.push(`COMMENT ON COLUMN ${fq}.${qi(c.column)} IS ${lit(`model field: ${c.field}`)};`);
   lines.push(`ALTER TABLE ${fq} ENABLE ROW LEVEL SECURITY;`);
   lines.push(`CREATE INDEX ${qi(shortName(t.table, "extra", t.schema + t.table))} ON ${fq} USING gin (${qi("_extra")}) WHERE ${qi("_extra")} IS NOT NULL;`);

@@ -1,5 +1,5 @@
 -- Movement Tracking baseline schema (6 tables in schema "leads").
--- The five lead tables have the same layout as Tirvona's leads schema; admin_users holds the Super Admin console accounts.
+-- Five lead tables (leads, field agents, regions, attendance, GPS points); admin_users holds the Super Admin console accounts.
 -- Generated from src/database/pg/registry.generated.ts with src/database/pg/ddl.ts (schemaDdl). Apply with: npm run db:migrate
 
 BEGIN;
@@ -44,7 +44,7 @@ CREATE TABLE "leads"."lead_attendances" (
   "_nulls" text[],
   "_extra" jsonb
 );
-COMMENT ON TABLE "leads"."lead_attendances" IS 'Tirvona model collection lead_attendances. Layout: src/database/pg/registry.generated.ts';
+COMMENT ON TABLE "leads"."lead_attendances" IS 'Model collection lead_attendances. Layout: src/database/pg/registry.generated.ts';
 COMMENT ON COLUMN "leads"."lead_attendances"."agent_id" IS 'model field: agentId';
 COMMENT ON COLUMN "leads"."lead_attendances"."agent_name" IS 'model field: agentName';
 COMMENT ON COLUMN "leads"."lead_attendances"."agent_phone" IS 'model field: agentPhone';
@@ -106,7 +106,7 @@ CREATE TABLE "leads"."lead_location_pings" (
   "_nulls" text[],
   "_extra" jsonb
 );
-COMMENT ON TABLE "leads"."lead_location_pings" IS 'Tirvona model collection lead_location_pings. Layout: src/database/pg/registry.generated.ts';
+COMMENT ON TABLE "leads"."lead_location_pings" IS 'Model collection lead_location_pings. Layout: src/database/pg/registry.generated.ts';
 COMMENT ON COLUMN "leads"."lead_location_pings"."agent_id" IS 'model field: agentId';
 COMMENT ON COLUMN "leads"."lead_location_pings"."agent_name" IS 'model field: agentName';
 COMMENT ON COLUMN "leads"."lead_location_pings"."recorded_at" IS 'model field: recordedAt';
@@ -139,7 +139,7 @@ CREATE TABLE "leads"."lead_regions" (
   "_nulls" text[],
   "_extra" jsonb
 );
-COMMENT ON TABLE "leads"."lead_regions" IS 'Tirvona model collection lead_regions. Layout: src/database/pg/registry.generated.ts';
+COMMENT ON TABLE "leads"."lead_regions" IS 'Model collection lead_regions. Layout: src/database/pg/registry.generated.ts';
 COMMENT ON COLUMN "leads"."lead_regions"."created_by_admin_id" IS 'model field: createdByAdminId';
 COMMENT ON COLUMN "leads"."lead_regions"."created_by_admin_name" IS 'model field: createdByAdminName';
 COMMENT ON COLUMN "leads"."lead_regions"."created_at" IS 'model field: createdAt';
@@ -175,7 +175,7 @@ CREATE TABLE "leads"."lead_users" (
   "_nulls" text[],
   "_extra" jsonb
 );
-COMMENT ON TABLE "leads"."lead_users" IS 'Tirvona model collection lead_users. Layout: src/database/pg/registry.generated.ts';
+COMMENT ON TABLE "leads"."lead_users" IS 'Model collection lead_users. Layout: src/database/pg/registry.generated.ts';
 COMMENT ON COLUMN "leads"."lead_users"."password_hash" IS 'model field: passwordHash';
 COMMENT ON COLUMN "leads"."lead_users"."employee_code" IS 'model field: employeeCode';
 COMMENT ON COLUMN "leads"."lead_users"."last_login_at" IS 'model field: lastLoginAt';
@@ -241,7 +241,7 @@ CREATE TABLE "leads"."leads" (
   "_nulls" text[],
   "_extra" jsonb
 );
-COMMENT ON TABLE "leads"."leads" IS 'Tirvona model collection leads. Layout: src/database/pg/registry.generated.ts';
+COMMENT ON TABLE "leads"."leads" IS 'Model collection leads. Layout: src/database/pg/registry.generated.ts';
 COMMENT ON COLUMN "leads"."leads"."room_inventory" IS 'model field: roomInventory';
 COMMENT ON COLUMN "leads"."leads"."agent_notes" IS 'model field: agentNotes';
 COMMENT ON COLUMN "leads"."leads"."captured_by" IS 'model field: capturedBy';
@@ -304,7 +304,7 @@ CREATE TABLE "leads"."admin_users" (
   "_nulls" text[],
   "_extra" jsonb
 );
-COMMENT ON TABLE "leads"."admin_users" IS 'Tirvona model collection admin_users. Layout: src/database/pg/registry.generated.ts';
+COMMENT ON TABLE "leads"."admin_users" IS 'Model collection admin_users. Layout: src/database/pg/registry.generated.ts';
 COMMENT ON COLUMN "leads"."admin_users"."password_hash" IS 'model field: passwordHash';
 COMMENT ON COLUMN "leads"."admin_users"."token_version" IS 'model field: tokenVersion';
 COMMENT ON COLUMN "leads"."admin_users"."last_login_at" IS 'model field: lastLoginAt';

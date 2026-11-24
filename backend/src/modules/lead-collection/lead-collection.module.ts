@@ -17,8 +17,7 @@ import { LeadAgentGuard } from "./presentation/guards/lead-agent.guard";
 import { LeadSupervisorGuard } from "./presentation/guards/lead-supervisor.guard";
 import { LeadRateLimitIdentityMiddleware } from "./presentation/lead-rate-limit-identity.middleware";
 import { UploadsModule } from "../uploads/uploads.module";
-// Movement Tracking: the Super Admin module supplies the admin area scope
-// (Tirvona's HrLocationModule) — there are no ashrams or HR offices here.
+// The Super Admin module supplies the admin area scope (AdminScopeService).
 import { SuperAdminModule } from "../super-admin/super-admin.module";
 import { LeadAttendanceService } from "./application/lead-attendance.service";
 import { LeadTrackingService } from "./application/lead-tracking.service";

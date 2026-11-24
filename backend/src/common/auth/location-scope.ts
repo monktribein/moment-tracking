@@ -3,7 +3,7 @@
  * manages only records whose address mentions the city of the HR office it is
  * assigned to.
  *
- * Addresses across Tirvona are free text in many shapes ("Raman Reti,
+ * Addresses are free text in many shapes ("Raman Reti,
  * Vrindavan", "Vrindaban, UP", city/district fields...), so a record is in
  * scope when any of its address fields contains one of the scope's place
  * names, ignoring case. Places that are run as one area are grouped:

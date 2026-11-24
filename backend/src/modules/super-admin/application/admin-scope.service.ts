@@ -4,8 +4,8 @@ import type { LocationScope } from "../../../common/auth/location-scope";
 import { SUPER_ADMIN_ROLE } from "../domain/super-admin.constants";
 
 /**
- * Stands in for Tirvona's HrLocationService in the lead admin controller (same
- * `scopeFor` contract). There are no HR offices here: a Super Admin is never
+ * Area scope for the lead admin controller (`scopeFor`). There are no HR
+ * offices here: a Super Admin is never
  * area-restricted (null = every record), and any other role sees nothing.
  */
 @Injectable()

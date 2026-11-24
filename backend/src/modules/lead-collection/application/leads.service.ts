@@ -10,13 +10,17 @@ import { InjectModel } from "../../../database/orm-nest";
 import { Types, type Model } from "../../../database/orm";
 import { escapeRegex } from "../../../common/utils/escape-regex";
 import {
+  LEAD_ASSIGNER_ROLES,
   LEAD_CONNECTION,
   LEAD_MODEL,
+  LEAD_USER_MODEL,
 } from "../domain/lead-collection.constants";
 import type {
   AuthenticatedLeadUser,
   LeadDocument,
   LeadRecord,
+  LeadUserDocument,
+  LeadUserRecord,
 } from "../domain/lead-collection.types";
 import type {
   LeadDecisionDto,
@@ -51,17 +55,66 @@ export interface AgentLeadScope {
   district?: string;
 }
 
+/** Who changed a lead's assignment: recorded as lastUpdatedByName / lastUpdatedByRole. */
+export interface LeadAssigner {
+  name: string;
+  role: string;
+}
+
+interface LeadAssignment {
+  assignedAgentId: Types.ObjectId | null;
+  assignedAgentName: string;
+  assignedAgentCode: string;
+}
+
+const sameDistrict = (a?: string, b?: string): boolean =>
+  (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
+
 @Injectable()
 export class LeadsService {
   constructor(
     @InjectModel(LEAD_MODEL, LEAD_CONNECTION)
     private readonly leads: Model<LeadDocument>,
+    @InjectModel(LEAD_USER_MODEL, LEAD_CONNECTION)
+    private readonly leadUsers: Model<LeadUserDocument>,
   ) {}
 
   private objectId(id: string): Types.ObjectId {
     if (!Types.ObjectId.isValid(id))
       throw new BadRequestException("Invalid lead id");
     return new Types.ObjectId(id);
+  }
+
+  static canAssign(role?: string): boolean {
+    return LEAD_ASSIGNER_ROLES.some((r) => r === role);
+  }
+
+  /**
+   * The assignment fields for a field agent, read from their account (a name or
+   * code sent by the client is never trusted); an empty id unassigns.
+   * `district`, when given, limits the choice to field agents of that district.
+   */
+  private async assignmentFor(
+    agentId: string | null | undefined,
+    district?: string,
+  ): Promise<LeadAssignment> {
+    if (!agentId) return { assignedAgentId: null, assignedAgentName: "", assignedAgentCode: "" };
+    if (!Types.ObjectId.isValid(agentId))
+      throw new BadRequestException("Invalid field agent id");
+    const agent = await this.leadUsers
+      .findById(new Types.ObjectId(agentId))
+      .lean<LeadUserRecord>();
+    if (!agent || agent.role !== "field_agent")
+      throw new BadRequestException("Choose a field agent to assign this lead to");
+    if (agent.status !== "active")
+      throw new BadRequestException("This field agent's account is suspended");
+    if (district !== undefined && !sameDistrict(agent.district, district))
+      throw new ForbiddenException("You can only assign field agents of your own district");
+    return {
+      assignedAgentId: agent._id,
+      assignedAgentName: agent.name,
+      assignedAgentCode: agent.employeeCode ?? "",
+    };
   }
 
   private toDocument(
@@ -156,20 +209,7 @@ export class LeadsService {
             : (existing?.meeting?.mode ?? ""),
       },
       images: dto.images ?? existing?.images ?? [],
-      assignedAgentId:
-        dto.assignedAgentId !== undefined
-          ? dto.assignedAgentId && Types.ObjectId.isValid(dto.assignedAgentId)
-            ? new Types.ObjectId(dto.assignedAgentId)
-            : null
-          : (existing?.assignedAgentId ?? null),
-      assignedAgentName:
-        dto.assignedAgentName !== undefined
-          ? dto.assignedAgentName.trim()
-          : (existing?.assignedAgentName ?? ""),
-      assignedAgentCode:
-        dto.assignedAgentCode !== undefined
-          ? dto.assignedAgentCode.trim()
-          : (existing?.assignedAgentCode ?? ""),
+      // assignedAgentId / Name / Code are set only through assignmentFor().
       documentChecklist:
         dto.documentChecklist !== undefined
           ? dto.documentChecklist
@@ -275,7 +315,11 @@ export class LeadsService {
         filter.capturedBy = agentObjId;
       }
 
-      if (scope.district?.trim()) {
+      // A field agent sees exactly their own and their assigned leads, wherever
+      // they are: the Super Admin may assign a lead outside the agent's district.
+      if (scope.role === "field_agent") {
+        // no area filter
+      } else if (scope.district?.trim()) {
         const dRegex = new RegExp(escapeRegex(scope.district.trim()), "i");
         const locFilter = {
           $or: [
@@ -314,12 +358,13 @@ export class LeadsService {
   async findOne(id: string, scope?: AgentLeadScope): Promise<LeadRecord> {
     const row = await this.leads.findById(this.objectId(id)).lean<LeadRecord>();
     if (!row) throw new NotFoundException("Lead not found");
+    const isOwner = Boolean(scope) && String(row.capturedBy ?? "") === scope?.capturedBy;
+    const isAssigned = Boolean(
+      scope &&
+        ((row.assignedAgentId && String(row.assignedAgentId) === scope.capturedBy) ||
+          (scope.employeeCode && row.assignedAgentCode === scope.employeeCode)),
+    );
     if (scope) {
-      const isOwner = String(row.capturedBy ?? "") === scope.capturedBy;
-      const isAssigned =
-        (row.assignedAgentId && String(row.assignedAgentId) === scope.capturedBy) ||
-        (scope.employeeCode && row.assignedAgentCode === scope.employeeCode);
-
       if (scope.role === "field_agent") {
         if (!isOwner && !isAssigned) {
           // If unassigned but in same region, allow access
@@ -343,7 +388,9 @@ export class LeadsService {
         throw new ForbiddenException("This lead belongs to another agent");
       }
     }
-    if (scope?.district?.trim() && row.location) {
+    // A field agent's own or assigned lead stays open to them in any district.
+    const ownedOrAssigned = scope?.role === "field_agent" && (isOwner || isAssigned);
+    if (scope?.district?.trim() && row.location && !ownedOrAssigned) {
       const d = scope.district.trim().toLowerCase();
       const match =
         (row.location.district && row.location.district.toLowerCase().includes(d)) ||
@@ -363,11 +410,18 @@ export class LeadsService {
     if (!dto.name || !dto.name.trim()) {
       throw new BadRequestException("Stay name is required");
     }
+    let assignment: Partial<LeadAssignment> = {};
+    if (dto.assignedAgentId) {
+      if (!LeadsService.canAssign(agent.role))
+        throw new ForbiddenException("Only lead executives and supervisors can assign leads");
+      assignment = await this.assignmentFor(dto.assignedAgentId, agent.district);
+    }
     const created = await this.leads.create({
       ...this.toDocument(dto, {
         state: agent.state,
         district: agent.district,
       }),
+      ...assignment,
       status: "pending",
       capturedBy: new Types.ObjectId(agent.id),
       capturedByName: agent.name,
@@ -380,13 +434,49 @@ export class LeadsService {
     if (!dto.name || !dto.name.trim()) {
       throw new BadRequestException("Stay name is required");
     }
+    const assignment = dto.assignedAgentId ? await this.assignmentFor(dto.assignedAgentId) : {};
     const created = await this.leads.create({
       ...this.toDocument(dto),
+      ...assignment,
       status: dto.status ?? "pending",
       capturedByName: "Admin console",
       capturedAt: new Date(),
     });
     return this.findOne(created._id.toString());
+  }
+
+  /**
+   * Assigns a lead to a field agent (null unassigns). On the agent routes
+   * (`scope` given) the lead must be visible to the caller and still pending,
+   * and `district` limits the choice to field agents of the caller's district.
+   */
+  async assign(
+    id: string,
+    agentId: string | null,
+    assigner: LeadAssigner,
+    options: { scope?: AgentLeadScope; district?: string } = {},
+  ): Promise<LeadRecord> {
+    const existing = await this.findOne(id, options.scope);
+    if (options.scope && existing.status !== "pending")
+      throw new ForbiddenException(
+        "This lead has already been reviewed and can no longer be reassigned",
+      );
+    const assignment = await this.assignmentFor(agentId, options.district);
+    const row = await this.leads
+      .findByIdAndUpdate(
+        this.objectId(id),
+        {
+          $set: {
+            ...assignment,
+            lastUpdatedByName: assigner.name,
+            lastUpdatedByRole: assigner.role,
+          },
+        },
+        { new: true },
+      )
+      .lean<LeadRecord>();
+    if (!row) throw new NotFoundException("Lead not found");
+    return row;
   }
 
   async update(
@@ -411,6 +501,21 @@ export class LeadsService {
     const unset = update.geo === undefined ? { geo: "" } : undefined;
     if (unset) delete update.geo;
     if (!scope && dto.status) update.status = dto.status;
+
+    // Sending the same assignee back (a full-object save) changes nothing.
+    const currentAgent = existing.assignedAgentId ? String(existing.assignedAgentId) : "";
+    if (dto.assignedAgentId !== undefined && (dto.assignedAgentId || "") !== currentAgent) {
+      if (!scope) {
+        Object.assign(update, await this.assignmentFor(dto.assignedAgentId));
+      } else if (LeadsService.canAssign(actor?.role ?? scope.role)) {
+        Object.assign(
+          update,
+          await this.assignmentFor(dto.assignedAgentId, actor?.district ?? scope.district ?? ""),
+        );
+      } else {
+        throw new ForbiddenException("Only lead executives and supervisors can assign leads");
+      }
+    }
 
     // Track field agent update / verification
     if (actor?.role === "field_agent" || scope?.role === "field_agent") {
@@ -468,7 +573,10 @@ export class LeadsService {
     id: string,
     scope?: AgentLeadScope,
   ): Promise<{ id: string }> {
-    await this.findOne(id, scope);
+    const row = await this.findOne(id, scope);
+    // A lead assigned to a field agent belongs to whoever added it.
+    if (scope?.role === "field_agent" && String(row.capturedBy ?? "") !== scope.capturedBy)
+      throw new ForbiddenException("Only the person who added this lead can delete it");
     await this.leads.findByIdAndDelete(this.objectId(id));
     return { id };
   }
@@ -493,8 +601,11 @@ export class LeadsService {
       } else if (agentObjId) {
         match.capturedBy = agentObjId;
       }
-      if (scope.state) match["location.state"] = scope.state;
-      if (scope.district) match["location.district"] = scope.district;
+      // Same rule as list(): a field agent's own and assigned leads count anywhere.
+      if (scope.role !== "field_agent") {
+        if (scope.state) match["location.state"] = scope.state;
+        if (scope.district) match["location.district"] = scope.district;
+      }
     }
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 

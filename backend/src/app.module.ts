@@ -9,8 +9,8 @@ import { CommonModule } from "./common/common.module";
 import { RolesGuard } from "./common/guards/roles.guard";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 import { SuperAdminModule } from "./modules/super-admin/super-admin.module";
-// The lead system, copied from Tirvona: field agents, leads, regions, attendance,
-// GPS tracking and supervisor tools. Same routes: /api/lead-collection/*.
+// The lead system: field agents, leads, regions, attendance, GPS tracking and
+// supervisor tools. Routes: /api/lead-collection/*.
 import { LeadCollectionModule } from "./modules/lead-collection/lead-collection.module";
 import { hybridRateLimitTracker, ipRateLimitTracker } from "./common/throttling/rate-limit-trackers";
 

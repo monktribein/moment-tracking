@@ -5,11 +5,11 @@ import type { Registry } from "./registry";
 export const REGISTRY: Registry = {
  "version": 1,
  "databases": {
-  "tirvona_leads": "leads"
+  "movement_tracking": "leads"
  },
  "tables": [
   {
-   "database": "tirvona_leads",
+   "database": "movement_tracking",
    "collection": "lead_attendances",
    "schema": "leads",
    "table": "lead_attendances",
@@ -245,7 +245,7 @@ export const REGISTRY: Registry = {
    ]
   },
   {
-   "database": "tirvona_leads",
+   "database": "movement_tracking",
    "collection": "lead_location_pings",
    "schema": "leads",
    "table": "lead_location_pings",
@@ -403,7 +403,7 @@ export const REGISTRY: Registry = {
    ]
   },
   {
-   "database": "tirvona_leads",
+   "database": "movement_tracking",
    "collection": "lead_regions",
    "schema": "leads",
    "table": "lead_regions",
@@ -453,7 +453,7 @@ export const REGISTRY: Registry = {
    ]
   },
   {
-   "database": "tirvona_leads",
+   "database": "movement_tracking",
    "collection": "lead_users",
    "schema": "leads",
    "table": "lead_users",
@@ -603,7 +603,7 @@ export const REGISTRY: Registry = {
    ]
   },
   {
-   "database": "tirvona_leads",
+   "database": "movement_tracking",
    "collection": "leads",
    "schema": "leads",
    "table": "leads",
@@ -908,7 +908,7 @@ export const REGISTRY: Registry = {
    ]
   },
   {
-   "database": "tirvona_leads",
+   "database": "movement_tracking",
    "collection": "admin_users",
    "schema": "leads",
    "table": "admin_users",
