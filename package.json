@@ -1,0 +1,10 @@
+{
+  "name": "movement-tracking-workspace",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix mobile run android",
+    "android": "npm --prefix mobile run android",
+    "mobile": "npm --prefix mobile start",
+    "mobile:test": "npm --prefix mobile run test:api"
+  }
+}
