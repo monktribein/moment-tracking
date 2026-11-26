@@ -274,7 +274,7 @@ export default function StaffPage() {
           <div className="credentials">
             <div>
               <span className="muted">Signs in at</span>
-              <strong>{created.staff.role === "lead_executive" || created.staff.role === "field_supervisor" ? "This dashboard (Lead executive) or the app" : "The mobile app"}</strong>
+              <strong>{created.staff.role === "lead_executive" || created.staff.role === "field_supervisor" ? "This dashboard (with Mobile number) or the app" : "The mobile app"}</strong>
             </div>
             <div>
               <span className="muted">Mobile number</span>

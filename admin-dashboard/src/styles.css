@@ -1240,6 +1240,23 @@ input[type="checkbox"] {
   font-size: 12.5px;
   text-align: center;
 }
+.login-who {
+  margin: 8px 2px 0;
+  font-size: 12.5px;
+}
+.password-input {
+  position: relative;
+}
+.password-input input {
+  width: 100%;
+  padding-right: 40px;
+}
+.password-input .icon-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;

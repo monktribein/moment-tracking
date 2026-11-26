@@ -237,7 +237,7 @@ function CredentialsModal({ credentials: c, onClose }: { credentials: Credential
       <div className="credentials">
         <div>
           <span className="muted">Signs in at</span>
-          <strong>This dashboard, under Admin</strong>
+          <strong>This dashboard, with Email</strong>
         </div>
         <div>
           <span className="muted">Company</span>
