@@ -85,6 +85,18 @@ export class LeadsService {
     return new Types.ObjectId(id);
   }
 
+  /** A company id the queries can trust. Every lead read or write is limited to one company. */
+  private company(companyId: string): string {
+    const id = String(companyId ?? "").trim();
+    if (!id) throw new ForbiddenException("This account is not linked to a company");
+    return id;
+  }
+
+  /** The filter for one lead of one company: another company's lead is "not found". */
+  private one(companyId: string, id: string) {
+    return { _id: this.objectId(id), companyId: this.company(companyId) };
+  }
+
   static canAssign(role?: string): boolean {
     return LEAD_ASSIGNER_ROLES.some((r) => r === role);
   }
@@ -95,14 +107,16 @@ export class LeadsService {
    * `district`, when given, limits the choice to field agents of that district.
    */
   private async assignmentFor(
+    companyId: string,
     agentId: string | null | undefined,
     district?: string,
   ): Promise<LeadAssignment> {
     if (!agentId) return { assignedAgentId: null, assignedAgentName: "", assignedAgentCode: "" };
     if (!Types.ObjectId.isValid(agentId))
       throw new BadRequestException("Invalid field agent id");
+    // Only a field agent of the same company: another company's agent is treated as unknown.
     const agent = await this.leadUsers
-      .findById(new Types.ObjectId(agentId))
+      .findOne({ _id: new Types.ObjectId(agentId), companyId: this.company(companyId) })
       .lean<LeadUserRecord>();
     if (!agent || agent.role !== "field_agent")
       throw new BadRequestException("Choose a field agent to assign this lead to");
@@ -255,8 +269,8 @@ export class LeadsService {
     };
   }
 
-  private buildFilter(query: LeadQueryDto): Record<string, unknown> {
-    const filter: Record<string, unknown> = {};
+  private buildFilter(companyId: string, query: LeadQueryDto): Record<string, unknown> {
+    const filter: Record<string, unknown> = { companyId: this.company(companyId) };
     if (query.status) filter.status = query.status;
     if (query.interest) filter.interest = query.interest;
     if (query.city?.trim())
@@ -280,11 +294,12 @@ export class LeadsService {
   }
 
   async list(
+    companyId: string,
     query: LeadQueryDto,
     scope?: AgentLeadScope,
     location: LocationScope = null,
   ): Promise<LeadListResult> {
-    const filter = this.buildFilter(query);
+    const filter = this.buildFilter(companyId, query);
     if (scope) {
       const agentObjId = Types.ObjectId.isValid(scope.capturedBy)
         ? this.objectId(scope.capturedBy)
@@ -355,8 +370,8 @@ export class LeadsService {
     return { items, total, page, limit };
   }
 
-  async findOne(id: string, scope?: AgentLeadScope): Promise<LeadRecord> {
-    const row = await this.leads.findById(this.objectId(id)).lean<LeadRecord>();
+  async findOne(companyId: string, id: string, scope?: AgentLeadScope): Promise<LeadRecord> {
+    const row = await this.leads.findOne(this.one(companyId, id)).lean<LeadRecord>();
     if (!row) throw new NotFoundException("Lead not found");
     const isOwner = Boolean(scope) && String(row.capturedBy ?? "") === scope?.capturedBy;
     const isAssigned = Boolean(
@@ -414,7 +429,7 @@ export class LeadsService {
     if (dto.assignedAgentId) {
       if (!LeadsService.canAssign(agent.role))
         throw new ForbiddenException("Only lead executives and supervisors can assign leads");
-      assignment = await this.assignmentFor(dto.assignedAgentId, agent.district);
+      assignment = await this.assignmentFor(agent.companyId, dto.assignedAgentId, agent.district);
     }
     const created = await this.leads.create({
       ...this.toDocument(dto, {
@@ -422,27 +437,31 @@ export class LeadsService {
         district: agent.district,
       }),
       ...assignment,
+      companyId: this.company(agent.companyId),
       status: "pending",
       capturedBy: new Types.ObjectId(agent.id),
       capturedByName: agent.name,
       capturedAt: new Date(),
     });
-    return this.findOne(created._id.toString());
+    return this.findOne(agent.companyId, created._id.toString());
   }
 
-  async createAsAdmin(dto: SaveLeadDto): Promise<LeadRecord> {
+  async createAsAdmin(companyId: string, dto: SaveLeadDto): Promise<LeadRecord> {
     if (!dto.name || !dto.name.trim()) {
       throw new BadRequestException("Stay name is required");
     }
-    const assignment = dto.assignedAgentId ? await this.assignmentFor(dto.assignedAgentId) : {};
+    const assignment = dto.assignedAgentId
+      ? await this.assignmentFor(companyId, dto.assignedAgentId)
+      : {};
     const created = await this.leads.create({
       ...this.toDocument(dto),
       ...assignment,
+      companyId: this.company(companyId),
       status: dto.status ?? "pending",
       capturedByName: "Admin console",
       capturedAt: new Date(),
     });
-    return this.findOne(created._id.toString());
+    return this.findOne(companyId, created._id.toString());
   }
 
   /**
@@ -451,20 +470,21 @@ export class LeadsService {
    * and `district` limits the choice to field agents of the caller's district.
    */
   async assign(
+    companyId: string,
     id: string,
     agentId: string | null,
     assigner: LeadAssigner,
     options: { scope?: AgentLeadScope; district?: string } = {},
   ): Promise<LeadRecord> {
-    const existing = await this.findOne(id, options.scope);
+    const existing = await this.findOne(companyId, id, options.scope);
     if (options.scope && existing.status !== "pending")
       throw new ForbiddenException(
         "This lead has already been reviewed and can no longer be reassigned",
       );
-    const assignment = await this.assignmentFor(agentId, options.district);
+    const assignment = await this.assignmentFor(companyId, agentId, options.district);
     const row = await this.leads
-      .findByIdAndUpdate(
-        this.objectId(id),
+      .findOneAndUpdate(
+        this.one(companyId, id),
         {
           $set: {
             ...assignment,
@@ -480,12 +500,13 @@ export class LeadsService {
   }
 
   async update(
+    companyId: string,
     id: string,
     dto: SaveLeadDto,
     scope?: AgentLeadScope,
     actor?: AuthenticatedLeadUser,
   ): Promise<LeadRecord> {
-    const existing = await this.findOne(id, scope);
+    const existing = await this.findOne(companyId, id, scope);
     if (scope && existing.status !== "pending")
       throw new ForbiddenException(
         "This lead has already been reviewed and can no longer be edited",
@@ -506,11 +527,15 @@ export class LeadsService {
     const currentAgent = existing.assignedAgentId ? String(existing.assignedAgentId) : "";
     if (dto.assignedAgentId !== undefined && (dto.assignedAgentId || "") !== currentAgent) {
       if (!scope) {
-        Object.assign(update, await this.assignmentFor(dto.assignedAgentId));
+        Object.assign(update, await this.assignmentFor(companyId, dto.assignedAgentId));
       } else if (LeadsService.canAssign(actor?.role ?? scope.role)) {
         Object.assign(
           update,
-          await this.assignmentFor(dto.assignedAgentId, actor?.district ?? scope.district ?? ""),
+          await this.assignmentFor(
+            companyId,
+            dto.assignedAgentId,
+            actor?.district ?? scope.district ?? "",
+          ),
         );
       } else {
         throw new ForbiddenException("Only lead executives and supervisors can assign leads");
@@ -534,8 +559,8 @@ export class LeadsService {
     }
 
     const row = await this.leads
-      .findByIdAndUpdate(
-        this.objectId(id),
+      .findOneAndUpdate(
+        this.one(companyId, id),
         unset ? { $set: update, $unset: unset } : { $set: update },
         { new: true },
       )
@@ -545,14 +570,15 @@ export class LeadsService {
   }
 
   async decide(
+    companyId: string,
     id: string,
     status: "approved" | "rejected" | "converted" | "pending",
     dto: LeadDecisionDto,
     actor: LeadAdminActor,
   ): Promise<LeadRecord> {
     const row = await this.leads
-      .findByIdAndUpdate(
-        this.objectId(id),
+      .findOneAndUpdate(
+        this.one(companyId, id),
         {
           $set: {
             status,
@@ -570,19 +596,24 @@ export class LeadsService {
   }
 
   async remove(
+    companyId: string,
     id: string,
     scope?: AgentLeadScope,
   ): Promise<{ id: string }> {
-    const row = await this.findOne(id, scope);
+    const row = await this.findOne(companyId, id, scope);
     // A lead assigned to a field agent belongs to whoever added it.
     if (scope?.role === "field_agent" && String(row.capturedBy ?? "") !== scope.capturedBy)
       throw new ForbiddenException("Only the person who added this lead can delete it");
-    await this.leads.findByIdAndDelete(this.objectId(id));
+    await this.leads.findOneAndDelete(this.one(companyId, id));
     return { id };
   }
 
-  async stats(scope?: AgentLeadScope, location: LocationScope = null): Promise<LeadStats> {
-    const match: Record<string, unknown> = {};
+  async stats(
+    companyId: string,
+    scope?: AgentLeadScope,
+    location: LocationScope = null,
+  ): Promise<LeadStats> {
+    const match: Record<string, unknown> = { companyId: this.company(companyId) };
     if (scope) {
       const agentObjId = Types.ObjectId.isValid(scope.capturedBy)
         ? this.objectId(scope.capturedBy)
@@ -654,12 +685,13 @@ export class LeadsService {
   }
 
   async listByDistrict(
+    companyId: string,
     query: LeadQueryDto,
     state: string,
     district: string,
     agentId?: string,
   ): Promise<LeadListResult> {
-    const filter = this.buildFilter(query);
+    const filter = this.buildFilter(companyId, query);
     const districtRegex = new RegExp(escapeRegex(district.trim()), "i");
     filter.$or = [
       { "location.district": districtRegex },
@@ -682,9 +714,10 @@ export class LeadsService {
     return { items, total, page, limit };
   }
 
-  async statsByDistrict(state: string, district: string): Promise<LeadStats> {
+  async statsByDistrict(companyId: string, state: string, district: string): Promise<LeadStats> {
     const districtRegex = new RegExp(escapeRegex(district.trim()), "i");
     const match: Record<string, unknown> = {
+      companyId: this.company(companyId),
       $or: [
         { "location.district": districtRegex },
         { "location.city": districtRegex },

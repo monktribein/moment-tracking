@@ -8,6 +8,8 @@ import {
 
 export const LeadSchema = new Schema(
   {
+    /** The company whose staff captured or own this lead (companies._id). */
+    companyId: { type: String, required: true, immutable: true },
     name: { type: String, required: true, trim: true, index: true },
 
     location: {
@@ -123,6 +125,7 @@ export const LeadSchema = new Schema(
 );
 
 LeadSchema.index({ status: 1, createdAt: -1 });
+LeadSchema.index({ companyId: 1, createdAt: -1 });
 LeadSchema.index({ capturedBy: 1, createdAt: -1 });
 LeadSchema.index({ "meeting.requested": 1, createdAt: -1 });
 LeadSchema.index({ "location.city": 1, status: 1 });

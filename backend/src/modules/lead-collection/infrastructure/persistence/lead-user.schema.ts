@@ -7,7 +7,10 @@ import {
 
 export const LeadUserSchema = new Schema(
   {
+    /** The company this person works for (companies._id). Set once, never moved. */
+    companyId: { type: String, required: true, immutable: true, trim: true },
     name: { type: String, required: true, trim: true },
+    // Unique across every company: the mobile number is how the person signs in.
     phone: { type: String, required: true, unique: true, trim: true },
     email: { type: String, trim: true, lowercase: true, default: "" },
     passwordHash: { type: String, required: true, select: false },
@@ -53,4 +56,5 @@ export const LeadUserSchema = new Schema(
 );
 
 LeadUserSchema.index({ status: 1, createdAt: -1 });
+LeadUserSchema.index({ companyId: 1, createdAt: -1 });
 LeadUserSchema.index({ name: 1 });

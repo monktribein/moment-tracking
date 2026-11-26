@@ -19,7 +19,7 @@ describe("configureDatabase", () => {
     expect(options.ttlSweep).toBe(false);
     expect(options.registry.databases).toEqual({ movement_tracking: "leads" });
     expect(options.registry.tables.map((t) => t.table).sort()).toEqual(
-      ["admin_users", "lead_attendances", "lead_location_pings", "lead_regions", "lead_users", "leads"],
+      ["admin_users", "companies", "lead_attendances", "lead_location_pings", "lead_regions", "lead_users", "leads"],
     );
   });
 });

@@ -46,7 +46,7 @@ export default function Login({ message }: { message?: string }) {
 
         <div className="segmented" role="tablist">
           <button type="button" role="tab" aria-selected={mode === "admin"} className={mode === "admin" ? "active" : ""} onClick={() => switchMode("admin")}>
-            <ShieldCheck size={16} /> Super Admin
+            <ShieldCheck size={16} /> Admin
           </button>
           <button type="button" role="tab" aria-selected={mode === "staff"} className={mode === "staff" ? "active" : ""} onClick={() => switchMode("staff")}>
             <Briefcase size={16} /> Lead executive
@@ -79,8 +79,8 @@ export default function Login({ message }: { message?: string }) {
         </form>
         <p className="login-foot muted">
           {mode === "admin"
-            ? "For the Super Admin account."
-            : "For lead executives and supervisors. The Super Admin creates these accounts under Staff."}
+            ? "For a company's Super Admin, and for the platform owner."
+            : "For lead executives and supervisors. Your company's Super Admin creates these accounts under Staff."}
         </p>
       </div>
     </div>

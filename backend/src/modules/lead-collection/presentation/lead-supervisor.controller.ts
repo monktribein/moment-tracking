@@ -50,8 +50,8 @@ export class LeadSupervisorController {
   @Get("dashboard")
   async dashboard(@CurrentLeadAgent() supervisor: AuthenticatedLeadUser) {
     const [stats, agents] = await Promise.all([
-      this.leads.statsByDistrict(supervisor.state, supervisor.district),
-      this.leadUsers.listByDistrict(supervisor.state, supervisor.district, {
+      this.leads.statsByDistrict(supervisor.companyId, supervisor.state, supervisor.district),
+      this.leadUsers.listByDistrict(supervisor.companyId, supervisor.state, supervisor.district, {
         page: 1,
         limit: 1000,
       }),
@@ -80,6 +80,7 @@ export class LeadSupervisorController {
     return {
       success: true,
       data: await this.leadUsers.listByDistrict(
+        supervisor.companyId,
         supervisor.state,
         supervisor.district,
         query,
@@ -93,11 +94,12 @@ export class LeadSupervisorController {
     @Param("agentId") agentId: string,
   ) {
     const agent = await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
     );
-    const stats = await this.leads.stats({
+    const stats = await this.leads.stats(supervisor.companyId, {
       capturedBy: agent._id.toString(),
       state: supervisor.state,
       district: supervisor.district,
@@ -116,6 +118,7 @@ export class LeadSupervisorController {
     @Query() query: LeadQueryDto,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -124,6 +127,7 @@ export class LeadSupervisorController {
     return {
       success: true,
       data: await this.leads.listByDistrict(
+        supervisor.companyId,
         query,
         supervisor.state,
         supervisor.district,
@@ -139,6 +143,7 @@ export class LeadSupervisorController {
     @Param("leadId") leadId: string,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -146,7 +151,7 @@ export class LeadSupervisorController {
 
     return {
       success: true,
-      data: await this.leads.findOne(leadId, {
+      data: await this.leads.findOne(supervisor.companyId, leadId, {
         capturedBy: agentId,
         state: supervisor.state,
         district: supervisor.district,
@@ -162,6 +167,7 @@ export class LeadSupervisorController {
     @Body() dto: SaveLeadDto,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -171,6 +177,7 @@ export class LeadSupervisorController {
       success: true,
       message: "Lead updated successfully",
       data: await this.leads.update(
+        supervisor.companyId,
         leadId,
         dto,
         {
@@ -195,6 +202,7 @@ export class LeadSupervisorController {
       data: await this.leadUsers.createForSupervisor(dto, {
         id: supervisor.id,
         name: supervisor.name,
+        companyId: supervisor.companyId,
         state: supervisor.state,
         district: supervisor.district,
       }),
@@ -208,6 +216,7 @@ export class LeadSupervisorController {
     @Body() dto: UpdateLeadUserDto,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -222,7 +231,7 @@ export class LeadSupervisorController {
     return {
       success: true,
       message: "Agent updated successfully",
-      data: await this.leadUsers.update(agentId, dto),
+      data: await this.leadUsers.update(supervisor.companyId, agentId, dto),
     };
   }
 
@@ -234,6 +243,7 @@ export class LeadSupervisorController {
     @Body() dto: ResetLeadUserPasswordDto,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -242,7 +252,7 @@ export class LeadSupervisorController {
     return {
       success: true,
       message: "Password reset. The agent's existing sessions were signed out.",
-      data: await this.leadUsers.resetPassword(agentId, dto),
+      data: await this.leadUsers.resetPassword(supervisor.companyId, agentId, dto),
     };
   }
 
@@ -252,6 +262,7 @@ export class LeadSupervisorController {
     @Param("agentId") agentId: string,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -260,15 +271,16 @@ export class LeadSupervisorController {
     return {
       success: true,
       message: "Field agent deleted. Their captured leads were retained.",
-      data: await this.leadUsers.remove(agentId),
+      data: await this.leadUsers.remove(supervisor.companyId, agentId),
     };
   }
 
+  /** Attendance of this supervisor's company only. */
   @Get("attendance/summary")
-  async getAttendanceSummary() {
+  async getAttendanceSummary(@CurrentLeadAgent() supervisor: AuthenticatedLeadUser) {
     return {
       success: true,
-      data: await this.attendance.getAllAgentsAttendanceSummary(),
+      data: await this.attendance.getAllAgentsAttendanceSummary(supervisor.companyId),
     };
   }
 
@@ -279,12 +291,13 @@ export class LeadSupervisorController {
     @Query() query: AttendanceQueryDto,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
     );
 
-    const history = await this.attendance.getAgentAttendanceHistory(agentId, query);
+    const history = await this.attendance.getAgentAttendanceHistory(supervisor.companyId, agentId, query);
     return {
       success: true,
       data: await this.tracking.withAttendanceDistances(agentId, history, query),
@@ -299,6 +312,7 @@ export class LeadSupervisorController {
     @Param("attendanceId") attendanceId: string,
   ) {
     const agent = await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -329,6 +343,7 @@ export class LeadSupervisorController {
     @Query() query: TrackingDayQueryDto,
   ) {
     const agent = await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -356,6 +371,7 @@ export class LeadSupervisorController {
     @Query() query: TrackingHistoryQueryDto,
   ) {
     await this.leadUsers.findOneInDistrict(
+      supervisor.companyId,
       agentId,
       supervisor.state,
       supervisor.district,
@@ -372,7 +388,7 @@ export class LeadSupervisorController {
   async liveTracking(@CurrentLeadAgent() supervisor: AuthenticatedLeadUser) {
     return {
       success: true,
-      data: await this.tracking.liveBoard({
+      data: await this.tracking.liveBoard(supervisor.companyId, {
         state: supervisor.state,
         district: supervisor.district,
       }),

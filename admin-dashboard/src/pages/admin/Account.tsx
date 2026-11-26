@@ -35,9 +35,13 @@ export default function Account() {
   };
 
   if (!admin) return null;
+  const owner = admin.role === "platform_owner";
   return (
     <>
-      <PageHeader title="My account" subtitle="The Super Admin account." />
+      <PageHeader
+        title="My account"
+        subtitle={owner ? "The platform owner account." : `Super Admin of ${admin.company?.name ?? "your company"}.`}
+      />
       <div className="two-col">
         <section className="card">
           <div className="card-head">
@@ -54,8 +58,14 @@ export default function Account() {
             </div>
             <div className="kv-row">
               <dt>Role</dt>
-              <dd>Super Admin</dd>
+              <dd>{owner ? "Platform Owner" : "Super Admin"}</dd>
             </div>
+            {!owner && (
+              <div className="kv-row">
+                <dt>Company</dt>
+                <dd>{admin.company?.name ?? "—"}</dd>
+              </div>
+            )}
             <div className="kv-row">
               <dt>Last sign-in</dt>
               <dd>{fmtDateTime(admin.lastLoginAt)}</dd>

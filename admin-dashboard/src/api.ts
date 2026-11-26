@@ -3,6 +3,9 @@ import type {
   AdminSession,
   AgentAttendance,
   AttendanceSummary,
+  Company,
+  CompanyAdmin,
+  CompanyDetail,
   Lead,
   LeadStats,
   LiveFix,
@@ -217,6 +220,47 @@ export const adminApi = {
     request<TrackedDay[]>(`${A}/agents/${enc(id)}/tracking/history`, { query: range }),
   shiftRoute: (agentId: string, attendanceId: string) =>
     request<{ shift: ShiftRoute }>(`${A}/agents/${enc(agentId)}/shifts/${enc(attendanceId)}/route`),
+};
+
+export interface CompanyInput {
+  name?: string;
+  status?: "active" | "suspended";
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  notes?: string;
+}
+
+export interface NewCompanyInput extends CompanyInput {
+  name: string;
+  adminName: string;
+  adminEmail: string;
+  adminPassword?: string;
+}
+
+/** Platform owner routes (/api/platform): companies and their Super Admins. */
+export const platformApi = {
+  companies: () => request<Company[]>("/platform/companies"),
+  company: (id: string) => request<CompanyDetail>(`/platform/companies/${enc(id)}`),
+  createCompany: (body: NewCompanyInput) =>
+    request<{ company: Company; admin: CompanyAdmin; temporaryPassword?: string }>("/platform/companies", {
+      method: "POST",
+      body,
+    }),
+  updateCompany: (id: string, body: CompanyInput) =>
+    request<Company>(`/platform/companies/${enc(id)}`, { method: "PUT", body }),
+  addAdmin: (companyId: string, body: { name: string; email: string; password?: string }) =>
+    request<{ admin: CompanyAdmin; temporaryPassword?: string }>(`/platform/companies/${enc(companyId)}/admins`, {
+      method: "POST",
+      body,
+    }),
+  updateAdmin: (adminId: string, body: { name?: string; email?: string; status?: "active" | "suspended" }) =>
+    request<CompanyAdmin>(`/platform/admins/${enc(adminId)}`, { method: "PUT", body }),
+  resetAdminPassword: (adminId: string, password?: string) =>
+    request<{ id: string; temporaryPassword?: string }>(`/platform/admins/${enc(adminId)}/reset-password`, {
+      method: "POST",
+      body: password ? { password } : {},
+    }),
 };
 
 const S = "/lead-collection/agent/leads";

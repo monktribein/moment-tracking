@@ -9,6 +9,8 @@ import { CommonModule } from "./common/common.module";
 import { RolesGuard } from "./common/guards/roles.guard";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 import { SuperAdminModule } from "./modules/super-admin/super-admin.module";
+// The platform owner (higher authority): companies and their Super Admins. Routes: /api/platform/*.
+import { PlatformModule } from "./modules/platform/platform.module";
 // The lead system: field agents, leads, regions, attendance, GPS tracking and
 // supervisor tools. Routes: /api/lead-collection/*.
 import { LeadCollectionModule } from "./modules/lead-collection/lead-collection.module";
@@ -62,6 +64,7 @@ import { hybridRateLimitTracker, ipRateLimitTracker } from "./common/throttling/
     ScheduleModule.forRoot(),
     CommonModule,
     SuperAdminModule,
+    PlatformModule,
     LeadCollectionModule,
   ],
   providers: [

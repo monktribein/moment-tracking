@@ -40,6 +40,7 @@ export const leadsLeadAttendances = leadsSchema.table("lead_attendances", {
   "distanceKm": doublePrecision("distance_km"), // model: distanceKm
   "trackedPoints": doublePrecision("tracked_points"), // model: trackedPoints
   "distanceMeasuredAt": timestamp("distance_measured_at", { withTimezone: true, mode: "date" }), // model: distanceMeasuredAt
+  "companyId": text("company_id"), // model: companyId
   _nulls: text("_nulls").array(),
   _extra: jsonb("_extra"),
 });
@@ -64,6 +65,7 @@ export const leadsLeadLocationPings = leadsSchema.table("lead_location_pings", {
   "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
   "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
   "version": doublePrecision("version"), // model: __v
+  "companyId": text("company_id"), // model: companyId
   _nulls: text("_nulls").array(),
   _extra: jsonb("_extra"),
 });
@@ -77,6 +79,7 @@ export const leadsLeadRegions = leadsSchema.table("lead_regions", {
   "createdByAdminName": text("created_by_admin_name"), // model: createdByAdminName
   "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
   "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  "companyId": text("company_id"), // model: companyId
   _nulls: text("_nulls").array(),
   _extra: jsonb("_extra"),
 });
@@ -103,6 +106,7 @@ export const leadsLeadUsers = leadsSchema.table("lead_users", {
   "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
   "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
   "version": doublePrecision("version"), // model: __v
+  "companyId": text("company_id"), // model: companyId
   _nulls: text("_nulls").array(),
   _extra: jsonb("_extra"),
 });
@@ -148,6 +152,7 @@ export const leadsLeads = leadsSchema.table("leads", {
   "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
   "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
   "version": doublePrecision("version"), // model: __v
+  "companyId": text("company_id"), // model: companyId
   _nulls: text("_nulls").array(),
   _extra: jsonb("_extra"),
 });
@@ -162,6 +167,24 @@ export const leadsAdminUsers = leadsSchema.table("admin_users", {
   "status": text("status"), // model: status
   "tokenVersion": doublePrecision("token_version"), // model: tokenVersion
   "lastLoginAt": timestamp("last_login_at", { withTimezone: true, mode: "date" }), // model: lastLoginAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  "companyId": text("company_id"), // model: companyId
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.companies */
+export const leadsCompanies = leadsSchema.table("companies", {
+  id: text("id").primaryKey(), // model: _id
+  "name": text("name"), // model: name
+  "status": text("status"), // model: status
+  "contactPerson": text("contact_person"), // model: contactPerson
+  "contactEmail": text("contact_email"), // model: contactEmail
+  "contactPhone": text("contact_phone"), // model: contactPhone
+  "notes": text("notes"), // model: notes
+  "createdByAdminId": text("created_by_admin_id"), // model: createdByAdminId
+  "createdByAdminName": text("created_by_admin_name"), // model: createdByAdminName
   "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
   "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
   _nulls: text("_nulls").array(),

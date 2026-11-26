@@ -3,6 +3,8 @@ import type { LeadStatus, LeadUserRole } from "./lead-collection.constants";
 
 export interface AuthenticatedLeadUser {
   id: string;
+  /** The company this person works for: every read and write is limited to it. */
+  companyId: string;
   name: string;
   phone: string;
   email: string;
@@ -23,6 +25,7 @@ export interface LeadTokenPayload {
 
 export interface LeadUserRecord {
   _id: Types.ObjectId;
+  companyId: string;
   name: string;
   phone: string;
   email: string;
@@ -51,6 +54,7 @@ export interface LeadCoordinates {
 
 export interface LeadRecord {
   _id: Types.ObjectId;
+  companyId: string;
   name: string;
   location: {
     address: string;

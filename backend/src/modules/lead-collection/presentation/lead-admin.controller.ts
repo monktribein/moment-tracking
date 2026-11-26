@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   Param,
@@ -22,7 +23,7 @@ import {
   locationMatches,
   type LocationScope,
 } from "../../../common/auth/location-scope";
-// Area scope of the signed-in admin: a Super Admin sees every record.
+// Area scope of the signed-in admin: a Super Admin sees every record of their company.
 import { AdminScopeService } from "../../super-admin/application/admin-scope.service";
 import {
   LeadUsersService,
@@ -48,8 +49,10 @@ import {
 @ApiTags("Lead Collection")
 @ApiBearerAuth()
 /**
- * Lead Collection administration. Super Admin sees everything; an `hr` login
- * sees and manages only the leads, field agents and regions of its office's area.
+ * Lead Collection administration for one company. A Super Admin sees and
+ * manages only their own company's leads, staff, regions, attendance and
+ * tracking: the company comes from their account, never from the request, and
+ * a record of another company answers 404. The platform owner has no access here.
  */
 @Roles("super_admin", "hr", "executive")
 @SkipThrottle({ default: true, ipAbuse: true })
@@ -67,9 +70,16 @@ export class LeadAdminController {
     return this.location.scopeFor(user);
   }
 
-  /** A lead the caller may act on (404 when it is outside an HR login's area). */
+  /** The signed-in admin's company: every read and write below is limited to it. */
+  private company(user: AuthenticatedUser): string {
+    const id = String(user.companyId ?? "").trim();
+    if (!id) throw new ForbiddenException("This admin account is not linked to a company.");
+    return id;
+  }
+
+  /** A lead the caller may act on (404 when it is another company's, or outside an HR login's area). */
   private async scopedLead(user: AuthenticatedUser, id: string) {
-    const lead: any = await this.leads.findOne(id);
+    const lead: any = await this.leads.findOne(this.company(user), id);
     assertInLocation(
       await this.scope(user),
       "Lead",
@@ -80,9 +90,9 @@ export class LeadAdminController {
     return lead;
   }
 
-  /** A field agent the caller may act on (404 when outside an HR login's area). */
+  /** A staff account the caller may act on (404 when it is another company's, or outside an HR login's area). */
   private async scopedAgent(user: AuthenticatedUser, id: string) {
-    const agent: any = await this.leadUsers.findOne(id);
+    const agent: any = await this.leadUsers.findOne(this.company(user), id);
     assertInLocation(await this.scope(user), "Field agent", agent.district, agent.region);
     return agent;
   }
@@ -93,12 +103,18 @@ export class LeadAdminController {
 
   @Get("leads")
   async listLeads(@CurrentUser() user: AuthenticatedUser, @Query() query: LeadQueryDto) {
-    return { success: true, data: await this.leads.list(query, undefined, await this.scope(user)) };
+    return {
+      success: true,
+      data: await this.leads.list(this.company(user), query, undefined, await this.scope(user)),
+    };
   }
 
   @Get("leads/stats")
   async leadStats(@CurrentUser() user: AuthenticatedUser) {
-    return { success: true, data: await this.leads.stats(undefined, await this.scope(user)) };
+    return {
+      success: true,
+      data: await this.leads.stats(this.company(user), undefined, await this.scope(user)),
+    };
   }
 
   @Get("leads/:id")
@@ -117,7 +133,7 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Lead created",
-      data: await this.leads.createAsAdmin(dto),
+      data: await this.leads.createAsAdmin(this.company(user), dto),
     };
   }
 
@@ -138,11 +154,11 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Lead updated",
-      data: await this.leads.update(id, dto),
+      data: await this.leads.update(this.company(user), id, dto),
     };
   }
 
-  /** Assign the lead to any active field agent (`{ agentId: null }` unassigns). */
+  /** Assign the lead to any active field agent of the company (`{ agentId: null }` unassigns). */
   @Post("leads/:id/assign")
   @HttpCode(200)
   async assignLead(
@@ -154,8 +170,21 @@ export class LeadAdminController {
     return {
       success: true,
       message: dto.agentId ? "Lead assigned" : "Lead unassigned",
-      data: await this.leads.assign(id, dto.agentId, { name: user.name, role: user.role }),
+      data: await this.leads.assign(this.company(user), id, dto.agentId, {
+        name: user.name,
+        role: user.role,
+      }),
     };
+  }
+
+  private async decide(
+    user: AuthenticatedUser,
+    id: string,
+    status: "approved" | "rejected" | "converted" | "pending",
+    dto: LeadDecisionDto,
+  ) {
+    await this.scopedLead(user, id);
+    return this.leads.decide(this.company(user), id, status, dto, this.actor(user));
   }
 
   @Post("leads/:id/approve")
@@ -165,13 +194,7 @@ export class LeadAdminController {
     @Param("id") id: string,
     @Body() dto: LeadDecisionDto,
   ) {
-    return {
-      success: true,
-      message: "Lead approved",
-      data: await this.scopedLead(user, id).then(() =>
-        this.leads.decide(id, "approved", dto, this.actor(user)),
-      ),
-    };
+    return { success: true, message: "Lead approved", data: await this.decide(user, id, "approved", dto) };
   }
 
   @Post("leads/:id/reject")
@@ -181,13 +204,7 @@ export class LeadAdminController {
     @Param("id") id: string,
     @Body() dto: LeadDecisionDto,
   ) {
-    return {
-      success: true,
-      message: "Lead rejected",
-      data: await this.scopedLead(user, id).then(() =>
-        this.leads.decide(id, "rejected", dto, this.actor(user)),
-      ),
-    };
+    return { success: true, message: "Lead rejected", data: await this.decide(user, id, "rejected", dto) };
   }
 
   @Post("leads/:id/convert")
@@ -200,9 +217,7 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Lead marked as converted",
-      data: await this.scopedLead(user, id).then(() =>
-        this.leads.decide(id, "converted", dto, this.actor(user)),
-      ),
+      data: await this.decide(user, id, "converted", dto),
     };
   }
 
@@ -216,9 +231,7 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Lead reopened for review",
-      data: await this.scopedLead(user, id).then(() =>
-        this.leads.decide(id, "pending", dto, this.actor(user)),
-      ),
+      data: await this.decide(user, id, "pending", dto),
     };
   }
 
@@ -228,14 +241,14 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Lead deleted",
-      data: await this.leads.remove(id),
+      data: await this.leads.remove(this.company(user), id),
     };
   }
 
   @Get("regions")
   async listRegions(@CurrentUser() user: AuthenticatedUser) {
     const scope = await this.scope(user);
-    const regions = await this.leadUsers.listRegions();
+    const regions = await this.leadUsers.listRegions(this.company(user));
     return { success: true, data: regions.filter((r) => locationMatches(scope, r.district)) };
   }
 
@@ -248,7 +261,7 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Lead region added",
-      data: await this.leadUsers.addRegion(dto, this.actor(user)),
+      data: await this.leadUsers.addRegion(this.company(user), dto, this.actor(user)),
     };
   }
 
@@ -262,13 +275,16 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Lead region removed",
-      data: await this.leadUsers.removeRegion(state, district),
+      data: await this.leadUsers.removeRegion(this.company(user), state, district),
     };
   }
 
   @Get("users")
   async listUsers(@CurrentUser() user: AuthenticatedUser, @Query() query: LeadUserQueryDto) {
-    return { success: true, data: await this.leadUsers.list(query, await this.scope(user)) };
+    return {
+      success: true,
+      data: await this.leadUsers.list(this.company(user), query, await this.scope(user)),
+    };
   }
 
   @Get("users/:id")
@@ -285,7 +301,7 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Field agent account created",
-      data: await this.leadUsers.create(dto, this.actor(user)),
+      data: await this.leadUsers.create(this.company(user), dto, this.actor(user)),
     };
   }
 
@@ -300,7 +316,7 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Field agent updated",
-      data: await this.leadUsers.update(id, dto),
+      data: await this.leadUsers.update(this.company(user), id, dto),
     };
   }
 
@@ -315,7 +331,7 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Password reset. The agent's existing sessions were signed out.",
-      data: await this.leadUsers.resetPassword(id, dto),
+      data: await this.leadUsers.resetPassword(this.company(user), id, dto),
     };
   }
 
@@ -325,17 +341,22 @@ export class LeadAdminController {
     return {
       success: true,
       message: "Field agent deleted. Their captured leads were retained.",
-      data: await this.leadUsers.remove(id),
+      data: await this.leadUsers.remove(this.company(user), id),
     };
   }
 
   @Get("attendance/summary")
   async attendanceSummary(@CurrentUser() user: AuthenticatedUser) {
+    const companyId = this.company(user);
     const scope = await this.scope(user);
-    const data = await this.attendanceService.getAllAgentsAttendanceSummary();
+    const data = await this.attendanceService.getAllAgentsAttendanceSummary(companyId);
     if (scope === null) return { success: true, data };
     // An HR login only sees the agents of its area.
-    const agents = await this.leadUsers.list({ page: 1, limit: 10_000 } as LeadUserQueryDto, scope);
+    const agents = await this.leadUsers.list(
+      companyId,
+      { page: 1, limit: 10_000 } as LeadUserQueryDto,
+      scope,
+    );
     const allowed = new Set(agents.items.map((a: any) => String(a._id ?? a.id)));
     const keep = (map: Record<string, unknown>) =>
       Object.fromEntries(Object.entries(map).filter(([agentId]) => allowed.has(agentId)));
@@ -349,7 +370,7 @@ export class LeadAdminController {
     @Query() query: AttendanceQueryDto,
   ) {
     await this.scopedAgent(user, id);
-    const history = await this.attendanceService.getAgentAttendanceHistory(id, query);
+    const history = await this.attendanceService.getAgentAttendanceHistory(this.company(user), id, query);
     return {
       success: true,
       data: await this.tracking.withAttendanceDistances(id, history, query),
@@ -363,6 +384,7 @@ export class LeadAdminController {
     @Param("agentId") agentId: string,
     @Param("attendanceId") attendanceId: string,
   ) {
+    // scopedAgent is the gate: the agent must belong to this company.
     const agent = await this.scopedAgent(user, agentId);
     return {
       success: true,
@@ -380,10 +402,7 @@ export class LeadAdminController {
     };
   }
 
-  /**
-   * Movement tracking for any agent. A super admin is unrestricted, so the
-   * only lookup needed is that the agent exists.
-   */
+  /** Movement tracking for one agent of this company. `scopedAgent` is the gate. */
   @Get("agents/:agentId/tracking")
   async agentTracking(
     @CurrentUser() user: AuthenticatedUser,
@@ -418,12 +437,12 @@ export class LeadAdminController {
     return { success: true, data: await this.tracking.history(agentId, query) };
   }
 
-  /** Latest known position of every tracked agent, across every district. */
+  /** Latest known position of every tracked agent of this company, across every district. */
   @Get("tracking/live")
   async liveTracking(@CurrentUser() user: AuthenticatedUser) {
     return {
       success: true,
-      data: await this.tracking.liveBoard({}, undefined, await this.scope(user)),
+      data: await this.tracking.liveBoard(this.company(user), {}, undefined, await this.scope(user)),
     };
   }
 }

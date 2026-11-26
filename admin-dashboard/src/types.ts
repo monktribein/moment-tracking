@@ -12,14 +12,58 @@ export interface Paged<T> {
   limit: number;
 }
 
+/** "platform_owner" creates companies and their Super Admins; "super_admin" runs one company. */
+export type AdminRole = "platform_owner" | "super_admin";
+
 export interface AdminProfile {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: AdminRole | string;
   status: string;
+  /** The company a Super Admin runs; null for the platform owner. */
+  companyId: string | null;
+  company: { id: string; name: string; status: string } | null;
   lastLoginAt: string | null;
   createdAt?: string;
+}
+
+export interface CompanyCounts {
+  superAdmins: number;
+  staff: number;
+  activeStaff: number;
+  leads: number;
+}
+
+/** A customer company, as the platform owner sees it (totals only, never its records). */
+export interface Company {
+  id: string;
+  name: string;
+  status: "active" | "suspended";
+  contactPerson: string;
+  contactEmail: string;
+  contactPhone: string;
+  notes: string;
+  createdByAdminName: string;
+  createdAt?: string;
+  updatedAt?: string;
+  counts: CompanyCounts;
+}
+
+/** A company's Super Admin account. */
+export interface CompanyAdmin {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: "active" | "suspended";
+  companyId: string;
+  lastLoginAt: string | null;
+  createdAt?: string;
+}
+
+export interface CompanyDetail extends Company {
+  admins: CompanyAdmin[];
 }
 
 export interface AdminSession {

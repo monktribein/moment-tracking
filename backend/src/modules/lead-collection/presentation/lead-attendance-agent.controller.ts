@@ -90,7 +90,7 @@ export class LeadAttendanceAgentController {
   ) {
     return {
       success: true,
-      data: await this.attendanceService.getAgentAttendanceHistory(agent.id, query),
+      data: await this.attendanceService.getAgentAttendanceHistory(agent.companyId, agent.id, query),
     };
   }
 }

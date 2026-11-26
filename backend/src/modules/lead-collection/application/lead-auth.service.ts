@@ -8,6 +8,7 @@ import {
   LEAD_CONNECTION,
   LEAD_USER_MODEL,
 } from "../domain/lead-collection.constants";
+import { COMPANY_MODEL, COMPANY_SUSPENDED_MESSAGE } from "../../platform/domain/platform.constants";
 import type {
   AuthenticatedLeadUser,
   LeadTokenPayload,
@@ -30,12 +31,15 @@ export class LeadAuthService {
   constructor(
     @InjectModel(LEAD_USER_MODEL, LEAD_CONNECTION)
     private readonly leadUsers: Model<LeadUserDocument>,
+    @InjectModel(COMPANY_MODEL, LEAD_CONNECTION)
+    private readonly companies: Model<any>,
     private readonly jwt: JwtService,
   ) {}
 
   private toAuthenticated(user: LeadUserRecord): AuthenticatedLeadUser {
     return {
       id: user._id.toString(),
+      companyId: String(user.companyId),
       name: user.name,
       phone: user.phone,
       email: user.email ?? "",
@@ -67,7 +71,12 @@ export class LeadAuthService {
       if (!(await compare(dto.password, user.passwordHash))) throw invalid;
     }
 
-    if (!user.createdByAdminId?.trim()) throw invalid;
+    if (!user.createdByAdminId?.trim() || !user.companyId?.trim()) throw invalid;
+    // Suspending a company also bumps every staff tokenVersion, so sessions
+    // already open end too; this stops new sign-ins while it stays suspended.
+    const company = await this.companies.findById(user.companyId).select("status").lean<any>();
+    if (!company) throw invalid;
+    if (company.status !== "active") throw new UnauthorizedException(COMPANY_SUSPENDED_MESSAGE);
     if (!user.state?.trim() || !user.district?.trim())
       throw new UnauthorizedException(
         "No state and district are assigned to this account. Contact your supervisor.",
@@ -122,7 +131,7 @@ export class LeadAuthService {
       .findById(payload.sub)
       .lean<LeadUserRecord>();
     if (!user) throw new UnauthorizedException("Field agent account not found");
-    if (!user.createdByAdminId?.trim())
+    if (!user.createdByAdminId?.trim() || !user.companyId?.trim())
       throw new UnauthorizedException("Field agent account is not authorised");
     if (!user.state?.trim() || !user.district?.trim())
       throw new UnauthorizedException("Field agent jurisdiction is not assigned");

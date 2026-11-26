@@ -1,11 +1,12 @@
 # Movement Tracking — dashboard
 
 The web dashboard on top of the backend API (`../backend`). It is a separate app: the backend
-serves no pages. It has two sign-ins:
+serves no pages. It is shared by many companies, and has these sign-ins:
 
 | Who | Signs in with | Can |
 | --- | --- | --- |
-| **Super Admin** | email + password | Everything: overview, leads (review, assign, edit, delete), staff accounts of every role, attendance, live GPS tracking and routes, regions, own password |
+| **Platform owner** | email + password (tab *Admin*) | **Companies**: add a company with its Super Admin, add more Super Admins, reset their passwords, suspend a company or an admin. Sees each company's totals, never its records |
+| **Super Admin** (per company) | email + password (tab *Admin*) | Everything inside their own company: overview, leads (review, assign, edit, delete), staff accounts of every role, attendance, live GPS tracking and routes, regions, own password. Never sees another company |
 | **Lead executive** (and supervisors) | mobile number + password | Add leads and assign each one to a field agent of their own district; reassign while the lead is pending; see the district's field agents |
 
 Field agents and document verifiers use the mobile app, not this dashboard.
@@ -39,6 +40,14 @@ host's environment variables for the deployed dashboard). In Google Cloud Consol
 The key ships inside the page, so the website restriction is what stops others from using it.
 Markers use Google's `DEMO_MAP_ID` unless you set your own map ID in `VITE_GOOGLE_MAPS_MAP_ID`.
 If the key is missing or refused, the map shows a message saying so.
+
+## Add a company
+
+1. Sign in as the platform owner (the account from `PLATFORM_OWNER_EMAIL` in the backend's settings).
+2. **Companies** → **Add company**: the company's name and contact, then its Super Admin's name,
+   email and password (a strong one is filled in; keep or change it).
+3. Share the sign-in details shown after saving. The Super Admin signs in under **Admin** and
+   creates the company's staff. Suspending a company (power button) signs out everyone in it.
 
 ## Create a lead executive
 

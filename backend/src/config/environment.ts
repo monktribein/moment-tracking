@@ -41,10 +41,13 @@ export interface Environment {
   jwtIssuer: string;
   jwtAudience: string;
   adminBcryptRounds: number;
-  /** First Super Admin, created at startup only while no Super Admin exists. */
-  superAdminEmail: string;
-  superAdminName: string;
-  superAdminPassword: string;
+  /**
+   * The platform owner (higher authority), created at startup only while no
+   * platform owner exists. It creates companies and their Super Admins.
+   */
+  platformOwnerEmail: string;
+  platformOwnerName: string;
+  platformOwnerPassword: string;
   cloudinaryCloudName: string;
   cloudinaryApiKey: string;
   cloudinaryApiSecret: string;
@@ -78,9 +81,9 @@ export const environment = (): Environment => ({
   jwtIssuer: process.env.JWT_ISSUER ?? "movement-tracking-api",
   jwtAudience: process.env.JWT_AUDIENCE ?? "movement-tracking-admin",
   adminBcryptRounds: integer(process.env.ADMIN_BCRYPT_ROUNDS, 12),
-  superAdminEmail: process.env.SUPER_ADMIN_EMAIL ?? "",
-  superAdminName: process.env.SUPER_ADMIN_NAME ?? "Super Admin",
-  superAdminPassword: process.env.SUPER_ADMIN_PASSWORD ?? "",
+  platformOwnerEmail: process.env.PLATFORM_OWNER_EMAIL ?? "",
+  platformOwnerName: process.env.PLATFORM_OWNER_NAME ?? "Platform Owner",
+  platformOwnerPassword: process.env.PLATFORM_OWNER_PASSWORD ?? "",
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? "",
@@ -129,9 +132,9 @@ export function validateEnvironment(input: Record<string, unknown>): Record<stri
       throw new Error("SUPABASE_DB_URL must be a valid URL");
     }
   }
-  if (String(input.SUPER_ADMIN_PASSWORD ?? "") && String(input.SUPER_ADMIN_PASSWORD).length < 10)
-    throw new Error("SUPER_ADMIN_PASSWORD must contain at least 10 characters");
-  requireTogether(input, ["SUPER_ADMIN_EMAIL", "SUPER_ADMIN_PASSWORD"]);
+  if (String(input.PLATFORM_OWNER_PASSWORD ?? "") && String(input.PLATFORM_OWNER_PASSWORD).length < 10)
+    throw new Error("PLATFORM_OWNER_PASSWORD must contain at least 10 characters");
+  requireTogether(input, ["PLATFORM_OWNER_EMAIL", "PLATFORM_OWNER_PASSWORD"]);
   requireTogether(input, ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"]);
 
   if (nodeEnv === "production") {

@@ -2,24 +2,19 @@ import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
-import { OrmModule } from "../../database/orm-nest";
-import { LEAD_CONNECTION } from "../lead-collection/domain/lead-collection.constants";
 import { LeadDatabaseModule } from "../lead-collection/infrastructure/lead-database.module";
 import { AdminAuthService } from "./application/admin-auth.service";
 import { AdminScopeService } from "./application/admin-scope.service";
-import { ADMIN_USER_MODEL } from "./domain/super-admin.constants";
 import { AdminJwtStrategy } from "./infrastructure/admin-jwt.strategy";
-import { AdminUserSchema } from "./infrastructure/admin-user.schema";
 import { AdminAuthController } from "./presentation/admin-auth.controller";
 
 /**
- * Super Admin accounts and sign-in. Tables live in the same database (schema
- * `leads`) as the lead data, on the lead connection.
+ * Console accounts (platform owner and Super Admins) and their sign-in. The
+ * AdminUser and Company models are registered by LeadDatabaseModule.
  */
 @Module({
   imports: [
     LeadDatabaseModule,
-    OrmModule.forFeature([{ name: ADMIN_USER_MODEL, schema: AdminUserSchema }], LEAD_CONNECTION),
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],

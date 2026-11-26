@@ -581,6 +581,7 @@ export class LeadTrackingService {
     if (accepted.length) {
       const docs = accepted.map((fix) => ({
         agentId: this.objectId(agent.id),
+        companyId: agent.companyId,
         agentName: agent.name,
         state: agent.state,
         district: agent.district,
@@ -703,10 +704,11 @@ export class LeadTrackingService {
   }
 
   /**
-   * The newest fix for every agent in a district, for the supervisor's live
-   * board. One aggregation rather than a query per agent.
+   * The newest fix for every agent of one company (optionally one district),
+   * for the live boards. One aggregation rather than a query per agent.
    */
   async liveBoard(
+    companyId: string,
     scope: { state?: string; district?: string },
     sinceMinutes = 12 * 60,
     location: LocationScope = null,
@@ -720,7 +722,9 @@ export class LeadTrackingService {
       minutesAgo: number;
     }[]
   > {
+    if (!companyId) return [];
     const match: Record<string, unknown> = {
+      companyId,
       recordedAt: { $gte: new Date(Date.now() - sinceMinutes * 60_000) },
     };
     if (scope.district) match.district = scope.district;

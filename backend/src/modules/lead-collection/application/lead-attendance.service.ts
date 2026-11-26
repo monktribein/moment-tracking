@@ -112,6 +112,7 @@ export class LeadAttendanceService {
     const update = {
       $set: {
         agentId: agent.id,
+        companyId: agent.companyId,
         agentName: agent.name,
         agentPhone: agent.phone,
         role: agent.role,
@@ -269,8 +270,13 @@ export class LeadAttendanceService {
     return record || null;
   }
 
-  async getAgentAttendanceHistory(agentId: string, query?: AttendanceQueryDto) {
-    const user = await this.userModel.findById(agentId).lean();
+  /** One agent's attendance. `companyId` is the caller's company: another company's agent is "not found". */
+  async getAgentAttendanceHistory(companyId: string, agentId: string, query?: AttendanceQueryDto) {
+    if (!companyId || !Types.ObjectId.isValid(agentId))
+      throw new NotFoundException("Field executive not found");
+    const user = await this.userModel
+      .findOne({ _id: new Types.ObjectId(agentId), companyId })
+      .lean();
     if (!user) throw new NotFoundException("Field executive not found");
 
     const agentIdObj = this.objectId(agentId);
@@ -384,24 +390,15 @@ export class LeadAttendanceService {
     }
   }
 
-  async getDistrictTodayAttendance(district: string) {
+  /** Attendance totals and today's rows for every agent of one company. */
+  async getAllAgentsAttendanceSummary(companyId: string) {
+    if (!companyId) return { summaryMap: {}, todayMap: {} };
     const today = getTodayDateString();
-    const filter: Record<string, any> = { date: today };
-    if (district) filter.district = district;
+    const todayLogs = await this.attendanceModel.find({ companyId, date: today }).lean();
 
-    return this.attendanceModel
-      .find(filter)
-      .sort({ checkInTime: -1 })
-      .lean();
-  }
-
-  async getAllAgentsAttendanceSummary() {
-    const today = getTodayDateString();
-    const todayLogs = await this.attendanceModel.find({ date: today }).lean();
-    
-    // Aggregation for all agents total days present
+    // Aggregation for the company's agents: total days present
     const totals = await this.attendanceModel.aggregate([
-      { $match: { checkedIn: true } },
+      { $match: { companyId, checkedIn: true } },
       {
         $group: {
           _id: "$agentId",

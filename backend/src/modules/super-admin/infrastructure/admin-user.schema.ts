@@ -6,7 +6,10 @@ import {
   SUPER_ADMIN_ROLE,
 } from "../domain/super-admin.constants";
 
-/** Console accounts (Super Admin). Field agents live in lead_users, not here. */
+/**
+ * Console accounts: the platform owner and each company's Super Admins.
+ * Field agents and other staff live in lead_users, not here.
+ */
 export const AdminUserSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -14,6 +17,8 @@ export const AdminUserSchema = new Schema(
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ADMIN_ROLES, default: SUPER_ADMIN_ROLE },
     status: { type: String, enum: ADMIN_STATUSES, default: "active" },
+    /** The company a Super Admin runs (companies._id); null for the platform owner. */
+    companyId: { type: String, default: null, index: true },
     tokenVersion: { type: Number, default: 0 },
     lastLoginAt: { type: Date, default: null },
   },

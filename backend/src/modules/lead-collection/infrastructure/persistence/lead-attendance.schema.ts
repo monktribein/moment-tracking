@@ -12,6 +12,8 @@ export const LeadAttendanceSchema = new Schema(
       required: true,
       index: true,
     },
+    /** The agent's company, copied from their account at check-in. */
+    companyId: { type: String, trim: true, default: "" },
     agentName: { type: String, required: true, trim: true },
     agentPhone: { type: String, trim: true, default: "" },
     role: { type: String, trim: true, default: "field_agent" },
@@ -71,3 +73,4 @@ export const LeadAttendanceSchema = new Schema(
 LeadAttendanceSchema.index({ agentId: 1, date: 1 }, { unique: true });
 LeadAttendanceSchema.index({ date: 1, district: 1 });
 LeadAttendanceSchema.index({ createdAt: -1 });
+LeadAttendanceSchema.index({ companyId: 1, date: 1 });

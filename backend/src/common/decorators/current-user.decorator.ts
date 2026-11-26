@@ -9,6 +9,8 @@ export interface AuthenticatedUser {
   phone?: string;
   role: string;
   status: string;
+  /** The company a Super Admin runs; null for the platform owner. */
+  companyId?: string | null;
   permissions: string[];
   scopedAshramIds: string[];
   employerAshramId?: string;

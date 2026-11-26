@@ -164,6 +164,11 @@ export const REGISTRY: Registry = {
      "field": "distanceMeasuredAt",
      "column": "distance_measured_at",
      "kind": "date"
+    },
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
     }
    ],
    "indexes": [
@@ -239,6 +244,14 @@ export const REGISTRY: Registry = {
       "date": -1,
       "state": 1,
       "district": 1
+     },
+     "enforced": true
+    },
+    {
+     "name": "companyId_1_date_1",
+     "keys": {
+      "companyId": 1,
+      "date": 1
      },
      "enforced": true
     }
@@ -335,6 +348,11 @@ export const REGISTRY: Registry = {
      "field": "__v",
      "column": "version",
      "kind": "number"
+    },
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
     }
    ],
    "indexes": [
@@ -399,6 +417,14 @@ export const REGISTRY: Registry = {
      },
      "expireAfterSeconds": 15552000,
      "enforced": true
+    },
+    {
+     "name": "companyId_1_recordedAt_-1",
+     "keys": {
+      "companyId": 1,
+      "recordedAt": -1
+     },
+     "enforced": true
     }
    ]
   },
@@ -438,12 +464,18 @@ export const REGISTRY: Registry = {
      "field": "updatedAt",
      "column": "updated_at",
      "kind": "date"
+    },
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
     }
    ],
    "indexes": [
     {
-     "name": "state_1_district_1",
+     "name": "companyId_1_state_1_district_1",
      "keys": {
+      "companyId": 1,
       "state": 1,
       "district": 1
      },
@@ -553,6 +585,11 @@ export const REGISTRY: Registry = {
      "field": "__v",
      "column": "version",
      "kind": "number"
+    },
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
     }
    ],
    "indexes": [
@@ -597,6 +634,14 @@ export const REGISTRY: Registry = {
      "name": "name_1",
      "keys": {
       "name": 1
+     },
+     "enforced": true
+    },
+    {
+     "name": "companyId_1_createdAt_-1",
+     "keys": {
+      "companyId": 1,
+      "createdAt": -1
      },
      "enforced": true
     }
@@ -798,6 +843,11 @@ export const REGISTRY: Registry = {
      "field": "__v",
      "column": "version",
      "kind": "number"
+    },
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
     }
    ],
    "indexes": [
@@ -904,6 +954,14 @@ export const REGISTRY: Registry = {
      },
      "sparse": true,
      "enforced": true
+    },
+    {
+     "name": "companyId_1_createdAt_-1",
+     "keys": {
+      "companyId": 1,
+      "createdAt": -1
+     },
+     "enforced": true
     }
    ]
   },
@@ -958,6 +1016,11 @@ export const REGISTRY: Registry = {
      "field": "updatedAt",
      "column": "updated_at",
      "kind": "date"
+    },
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
     }
    ],
    "indexes": [
@@ -967,6 +1030,81 @@ export const REGISTRY: Registry = {
       "email": 1
      },
      "unique": true,
+     "enforced": true
+    },
+    {
+     "name": "companyId_1",
+     "keys": {
+      "companyId": 1
+     },
+     "enforced": true
+    }
+   ]
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "companies",
+   "schema": "leads",
+   "table": "companies",
+   "idKind": "objectId",
+   "columns": [
+    {
+     "field": "name",
+     "column": "name",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "contactPerson",
+     "column": "contact_person",
+     "kind": "string"
+    },
+    {
+     "field": "contactEmail",
+     "column": "contact_email",
+     "kind": "string"
+    },
+    {
+     "field": "contactPhone",
+     "column": "contact_phone",
+     "kind": "string"
+    },
+    {
+     "field": "notes",
+     "column": "notes",
+     "kind": "string"
+    },
+    {
+     "field": "createdByAdminId",
+     "column": "created_by_admin_id",
+     "kind": "string"
+    },
+    {
+     "field": "createdByAdminName",
+     "column": "created_by_admin_name",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": [
+    {
+     "name": "name_1",
+     "keys": {
+      "name": 1
+     },
      "enforced": true
     }
    ]

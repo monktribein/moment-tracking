@@ -5,10 +5,15 @@ import { CurrentUser, type AuthenticatedUser } from "../../../common/decorators/
 import { Public } from "../../../common/decorators/public.decorator";
 import { Roles } from "../../../common/decorators/roles.decorator";
 import { AdminAuthService } from "../application/admin-auth.service";
-import { SUPER_ADMIN_ROLE } from "../domain/super-admin.constants";
+import { PLATFORM_OWNER_ROLE, SUPER_ADMIN_ROLE } from "../domain/super-admin.constants";
 import { AdminLoginDto, ChangeAdminPasswordDto } from "./dtos/admin-auth.dto";
 
-/** Super Admin console sign-in. Use the token as `Authorization: Bearer <token>` on /api/lead-collection/admin/*. */
+/**
+ * Console sign-in for the platform owner and Super Admins (same endpoint; the
+ * returned `admin.role` tells them apart). Use the token as
+ * `Authorization: Bearer <token>`: a Super Admin on /api/lead-collection/admin/*,
+ * the platform owner on /api/platform/*.
+ */
 @ApiTags("Super Admin")
 @Controller("auth")
 export class AdminAuthController {
@@ -23,14 +28,14 @@ export class AdminAuthController {
   }
 
   @ApiBearerAuth()
-  @Roles(SUPER_ADMIN_ROLE)
+  @Roles(SUPER_ADMIN_ROLE, PLATFORM_OWNER_ROLE)
   @Get("me")
   async me(@CurrentUser() user: AuthenticatedUser) {
     return { success: true, data: await this.auth.me(user.id) };
   }
 
   @ApiBearerAuth()
-  @Roles(SUPER_ADMIN_ROLE)
+  @Roles(SUPER_ADMIN_ROLE, PLATFORM_OWNER_ROLE)
   @Post("change-password")
   @HttpCode(200)
   @Throttle({ default: { limit: 10, ttl: 900_000 } })

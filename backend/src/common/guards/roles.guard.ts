@@ -5,8 +5,9 @@ import { ROLES_KEY } from "../decorators/roles.decorator";
 import type { AuthenticatedUser } from "../decorators/current-user.decorator";
 
 /**
- * @Roles(...) check for console (admin) routes. A Super Admin passes every role
- * check; any other role must be listed.
+ * @Roles(...) check for console (admin) routes: the caller's role must be
+ * listed. No role passes everything: a Super Admin must not reach the platform
+ * owner's routes, and the platform owner must not reach a company's data.
  */
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -28,7 +29,6 @@ export class RolesGuard implements CanActivate {
     if (!allowed?.length) return true;
     const user = context.switchToHttp().getRequest<{ user?: AuthenticatedUser }>().user;
     if (!user) return false;
-    if (user.role === "super_admin") return true;
     return allowed.includes(user.role);
   }
 }

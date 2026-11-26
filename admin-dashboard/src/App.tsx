@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import {
+  Building2,
   CalendarCheck,
   ClipboardList,
   LayoutDashboard,
@@ -22,6 +23,7 @@ import Regions from "./pages/admin/Regions";
 import Account from "./pages/admin/Account";
 import MyLeads from "./pages/staff/MyLeads";
 import FieldAgents from "./pages/staff/FieldAgents";
+import Companies from "./pages/platform/Companies";
 
 // The map library loads only when Live tracking is opened.
 const Tracking = lazy(() => import("./pages/admin/Tracking"));
@@ -33,6 +35,12 @@ const ADMIN_NAV: NavItem[] = [
   { to: "/attendance", label: "Attendance", icon: <CalendarCheck size={18} /> },
   { to: "/tracking", label: "Live tracking", icon: <MapPin size={18} /> },
   { to: "/regions", label: "Regions", icon: <MapIcon size={18} /> },
+  { to: "/account", label: "My account", icon: <UserCog size={18} /> },
+];
+
+/** The platform owner: companies and their Super Admins only, no company's data. */
+const PLATFORM_NAV: NavItem[] = [
+  { to: "/", label: "Companies", icon: <Building2 size={18} />, end: true },
   { to: "/account", label: "My account", icon: <UserCog size={18} /> },
 ];
 
@@ -53,9 +61,24 @@ export default function App() {
 
   if (state.status === "signedOut") return <Login message={state.message} />;
 
+  if (state.status === "admin" && state.admin.role === "platform_owner")
+    return (
+      <Layout nav={PLATFORM_NAV} userName={state.admin.name || state.admin.email} userLine="Platform Owner">
+        <Routes>
+          <Route path="/" element={<Companies />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
+    );
+
   if (state.status === "admin")
     return (
-      <Layout nav={ADMIN_NAV} userName={state.admin.name || state.admin.email} userLine="Super Admin">
+      <Layout
+        nav={ADMIN_NAV}
+        userName={state.admin.name || state.admin.email}
+        userLine={state.admin.company ? `Super Admin · ${state.admin.company.name}` : "Super Admin"}
+      >
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/leads" element={<Leads />} />

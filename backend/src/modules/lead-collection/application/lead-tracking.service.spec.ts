@@ -7,8 +7,11 @@ import { LeadTrackingService } from "./lead-tracking.service";
  */
 const AGENT_ID = "64b7f3a1c2d4e5f6a7b8c9d0";
 
+const COMPANY_ID = "64b7f3a1c2d4e5f6a7b8c900";
+
 const agent: any = {
   id: AGENT_ID,
+  companyId: COMPANY_ID,
   name: "R. Sharma",
   phone: "9000000000",
   role: "field_agent",
@@ -237,25 +240,46 @@ describe("LeadTrackingService reading", () => {
     expect(filter.date).toBe(new Date().toISOString().slice(0, 10));
   });
 
-  it("narrows the live board to the caller's district", async () => {
+  it("narrows the live board to the caller's company and district", async () => {
     const { service, pings } = build();
 
-    await service.liveBoard({ state: "Uttar Pradesh", district: "Mathura" });
+    await service.liveBoard(COMPANY_ID, { state: "Uttar Pradesh", district: "Mathura" });
 
     const [pipeline] = pings.aggregate.mock.calls[0];
     expect(pipeline[0].$match).toMatchObject({
+      companyId: COMPANY_ID,
       district: "Mathura",
       state: "Uttar Pradesh",
     });
   });
 
-  it("leaves the live board unfiltered for an unrestricted caller", async () => {
+  it("keeps a company-wide live board to that company, across districts", async () => {
     const { service, pings } = build();
 
-    await service.liveBoard({});
+    await service.liveBoard(COMPANY_ID, {});
 
     const [pipeline] = pings.aggregate.mock.calls[0];
+    expect(pipeline[0].$match).toMatchObject({ companyId: COMPANY_ID });
     expect(pipeline[0].$match).not.toHaveProperty("district");
+  });
+
+  it("shows nothing on the live board without a company", async () => {
+    const { service, pings } = build();
+
+    expect(await service.liveBoard("", {})).toEqual([]);
+    expect(pings.aggregate).not.toHaveBeenCalled();
+  });
+
+  it("stamps each stored GPS point with the agent's company", async () => {
+    const { service, pings } = build();
+
+    await service.recordFixes(agent, {
+      fixes: [{ lat: 27.49, lng: 77.67, accuracy: 8, recordedAt: iso(0) }],
+    } as any);
+
+    const docs = pings.insertMany.mock.calls[0]?.[0] ?? [];
+    expect(docs.length).toBeGreaterThan(0);
+    for (const doc of docs) expect(doc.companyId).toBe(COMPANY_ID);
   });
 
   it("bounds a history request to the requested range", async () => {

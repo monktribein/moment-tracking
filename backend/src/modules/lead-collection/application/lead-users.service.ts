@@ -39,6 +39,12 @@ export interface LeadAdminActor {
   name: string;
 }
 
+/**
+ * Staff accounts (field agents, lead executives, supervisors, verifiers) and
+ * the region catalogue. Every method takes the caller's `companyId` first and
+ * reads and writes only that company's rows: a record of another company is
+ * reported as not found.
+ */
 @Injectable()
 export class LeadUsersService {
   private readonly config = leadCollectionConfig();
@@ -56,11 +62,21 @@ export class LeadUsersService {
     return `${district.trim()}, ${state.trim()}`;
   }
 
-  async listRegions(): Promise<
+  /** A company id the queries can trust; an empty one would match nothing useful. */
+  private company(companyId: string): string {
+    const id = String(companyId ?? "").trim();
+    if (!id) throw new ForbiddenException("This account is not linked to a company");
+    return id;
+  }
+
+  async listRegions(companyId: string): Promise<
     { state: string; district: string; source: "builtin" | "custom" }[]
   > {
-    // The built-in regions (source "builtin") plus the custom catalogue.
-    const customRows = await this.regions.find().select("state district").lean();
+    // The built-in regions (source "builtin") plus this company's own catalogue.
+    const customRows = await this.regions
+      .find({ companyId: this.company(companyId) })
+      .select("state district")
+      .lean();
     const merged = new Map<
       string,
       { state: string; district: string; source: "builtin" | "custom" }
@@ -87,7 +103,7 @@ export class LeadUsersService {
     );
   }
 
-  private async assertRegion(state: string, district: string): Promise<void> {
+  private async assertRegion(companyId: string, state: string, district: string): Promise<void> {
     const isDefault = DEFAULT_LEAD_REGIONS.some(
       (r) =>
         r.state.toLowerCase() === state.trim().toLowerCase() &&
@@ -97,19 +113,24 @@ export class LeadUsersService {
 
     const stateMatch = new RegExp(`^${escapeRegex(state.trim())}$`, "i");
     const districtMatch = new RegExp(`^${escapeRegex(district.trim())}$`, "i");
-    const custom = await this.regions.exists({ state: stateMatch, district: districtMatch });
+    const custom = await this.regions.exists({
+      companyId: this.company(companyId),
+      state: stateMatch,
+      district: districtMatch,
+    });
     if (!custom)
       throw new BadRequestException(
         "Select a listed region or add it to the region catalogue first",
       );
   }
 
-  async addRegion(dto: CreateLeadRegionDto, actor: LeadAdminActor) {
+  async addRegion(companyId: string, dto: CreateLeadRegionDto, actor: LeadAdminActor) {
     if (!actor.id?.trim())
       throw new BadRequestException("A verified super admin is required");
+    const company = this.company(companyId);
     const state = dto.state.trim();
     const district = dto.district.trim();
-    const exists = await this.listRegions();
+    const exists = await this.listRegions(company);
     if (
       exists.some(
         (row) =>
@@ -119,6 +140,7 @@ export class LeadUsersService {
     )
       throw new ConflictException("This region is already available");
     const created = await this.regions.create({
+      companyId: company,
       state,
       district,
       createdByAdminId: actor.id,
@@ -127,13 +149,14 @@ export class LeadUsersService {
     return { id: created._id.toString(), state, district, source: "custom" };
   }
 
-  async removeRegion(state: string, district: string): Promise<{ deleted: boolean }> {
-    const assigned = await this.leadUsers.exists({ state, district });
+  async removeRegion(companyId: string, state: string, district: string): Promise<{ deleted: boolean }> {
+    const company = this.company(companyId);
+    const assigned = await this.leadUsers.exists({ companyId: company, state, district });
     if (assigned)
       throw new ConflictException(
         "This region is assigned to a field agent and cannot be removed",
       );
-    const result = await this.regions.deleteOne({ state, district });
+    const result = await this.regions.deleteOne({ companyId: company, state, district });
     return { deleted: result.deletedCount === 1 };
   }
 
@@ -148,13 +171,18 @@ export class LeadUsersService {
     return new Types.ObjectId(id);
   }
 
-  async list(query: LeadUserQueryDto, location: LocationScope = null): Promise<{
+  /** The filter for one staff account of one company. */
+  private one(companyId: string, id: string) {
+    return { _id: this.objectId(id), companyId: this.company(companyId) };
+  }
+
+  async list(companyId: string, query: LeadUserQueryDto, location: LocationScope = null): Promise<{
     items: LeadUserListRow[];
     total: number;
     page: number;
     limit: number;
   }> {
-    const filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = { companyId: this.company(companyId) };
     if (query.status) filter.status = query.status;
     if (query.role) filter.role = query.role;
     if (query.search?.trim()) {
@@ -181,7 +209,7 @@ export class LeadUsersService {
       this.leadUsers.countDocuments(withLocation(filter, location, AGENT_LOCATION_FIELDS)),
     ]);
 
-    const byAgent = await this.countLeadsForAgents(items.map((item) => item._id));
+    const byAgent = await this.countLeadsForAgents(companyId, items.map((item) => item._id));
 
     return {
       items: items.map((item) => ({
@@ -194,7 +222,10 @@ export class LeadUsersService {
     };
   }
 
-  private async countLeadsForAgents(userIds: Types.ObjectId[]): Promise<Map<string, number>> {
+  private async countLeadsForAgents(
+    companyId: string,
+    userIds: Types.ObjectId[],
+  ): Promise<Map<string, number>> {
     if (!userIds || userIds.length === 0) return new Map();
 
     const counts = await this.leads.aggregate<{
@@ -203,6 +234,7 @@ export class LeadUsersService {
     }>([
       {
         $match: {
+          companyId: this.company(companyId),
           $or: [
             { capturedBy: { $in: userIds } },
             { assignedAgentId: { $in: userIds } },
@@ -228,15 +260,14 @@ export class LeadUsersService {
     return new Map(counts.map((row) => [String(row._id), row.total]));
   }
 
-  async findOne(id: string): Promise<LeadUserRecord> {
-    const row = await this.leadUsers
-      .findById(this.objectId(id))
-      .lean<LeadUserRecord>();
+  async findOne(companyId: string, id: string): Promise<LeadUserRecord> {
+    const row = await this.leadUsers.findOne(this.one(companyId, id)).lean<LeadUserRecord>();
     if (!row) throw new NotFoundException("Lead user not found");
     return row;
   }
 
   async create(
+    companyId: string,
     dto: CreateLeadUserDto,
     actor: LeadAdminActor,
   ): Promise<LeadUserRecord> {
@@ -244,14 +275,17 @@ export class LeadUsersService {
       throw new BadRequestException(
         "A verified super admin is required to create a field agent",
       );
+    const company = this.company(companyId);
     const phone = LeadUsersService.normalisePhone(dto.phone);
     if (phone.length !== 10)
       throw new BadRequestException("Phone must be a 10-digit mobile number");
+    // Checked across every company: the mobile number is the sign-in.
     if (await this.leadUsers.exists({ phone }))
-      throw new ConflictException("A lead user with this phone already exists");
-    await this.assertRegion(dto.state, dto.district);
+      throw new ConflictException("This mobile number is already registered. Use a different number.");
+    await this.assertRegion(company, dto.state, dto.district);
 
     const created = await this.leadUsers.create({
+      companyId: company,
       name: dto.name.trim(),
       phone,
       email: dto.email?.trim().toLowerCase() ?? "",
@@ -266,10 +300,11 @@ export class LeadUsersService {
       createdByAdminId: actor.id,
       createdByAdminName: actor.name,
     });
-    return this.findOne(created._id.toString());
+    return this.findOne(company, created._id.toString());
   }
 
-  async update(id: string, dto: UpdateLeadUserDto): Promise<LeadUserRecord> {
+  async update(companyId: string, id: string, dto: UpdateLeadUserDto): Promise<LeadUserRecord> {
+    const company = this.company(companyId);
     const update: Record<string, unknown> = {};
     let invalidateSessions = false;
     let jurisdiction: { state: string; district: string } | null = null;
@@ -280,10 +315,10 @@ export class LeadUsersService {
       invalidateSessions = true;
     }
     if (dto.state !== undefined || dto.district !== undefined) {
-      const existing = await this.findOne(id);
+      const existing = await this.findOne(company, id);
       const state = dto.state?.trim() ?? existing.state;
       const district = dto.district?.trim() ?? existing.district;
-      await this.assertRegion(state, district);
+      await this.assertRegion(company, state, district);
       update.state = state;
       update.district = district;
       update.region = this.regionName(state, district);
@@ -303,7 +338,7 @@ export class LeadUsersService {
         _id: { $ne: this.objectId(id) },
       });
       if (clash)
-        throw new ConflictException("Another lead user already uses this phone");
+        throw new ConflictException("This mobile number is already registered. Use a different number.");
       update.phone = phone;
       invalidateSessions = true;
     }
@@ -317,8 +352,8 @@ export class LeadUsersService {
     }
 
     const row = await this.leadUsers
-      .findByIdAndUpdate(
-        this.objectId(id),
+      .findOneAndUpdate(
+        this.one(company, id),
         Object.keys(inc).length ? { $set: update, $inc: inc } : { $set: update },
         { new: true },
       )
@@ -326,7 +361,7 @@ export class LeadUsersService {
     if (!row) throw new NotFoundException("Lead user not found");
     if (jurisdiction)
       await this.leads.updateMany(
-        { capturedBy: row._id },
+        { companyId: company, capturedBy: row._id },
         {
           $set: {
             "location.state": jurisdiction.state,
@@ -338,13 +373,14 @@ export class LeadUsersService {
   }
 
   async resetPassword(
+    companyId: string,
     id: string,
     dto: ResetLeadUserPasswordDto,
   ): Promise<{ id: string; temporaryPassword?: string }> {
     // No password given: a strong one is generated and returned once, for the admin to read out.
     const temporaryPassword = dto.password ? undefined : generateTemporaryPassword();
-    const row = await this.leadUsers.findByIdAndUpdate(
-      this.objectId(id),
+    const row = await this.leadUsers.findOneAndUpdate(
+      this.one(companyId, id),
       {
         $set: { passwordHash: await hash(dto.password ?? temporaryPassword!, this.config.bcryptRounds) },
         $inc: { tokenVersion: 1 },
@@ -355,17 +391,19 @@ export class LeadUsersService {
     return { id: row._id.toString(), ...(temporaryPassword ? { temporaryPassword } : {}) };
   }
 
-  async remove(id: string): Promise<{ id: string; leadsRetained: number }> {
-    const objectId = this.objectId(id);
-    const row = await this.leadUsers.findByIdAndDelete(objectId);
+  async remove(companyId: string, id: string): Promise<{ id: string; leadsRetained: number }> {
+    const filter = this.one(companyId, id);
+    const row = await this.leadUsers.findOneAndDelete(filter);
     if (!row) throw new NotFoundException("Lead user not found");
     const leadsRetained = await this.leads.countDocuments({
-      capturedBy: objectId,
+      companyId: filter.companyId,
+      capturedBy: filter._id,
     });
     return { id, leadsRetained };
   }
 
   async listByDistrict(
+    companyId: string,
     state: string,
     district: string,
     query: LeadUserQueryDto,
@@ -393,7 +431,7 @@ export class LeadUsersService {
       orClauses.push({ state: stateRegex });
     }
 
-    const filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = { companyId: this.company(companyId) };
     if (orClauses.length > 0) {
       filter.$or = orClauses;
     }
@@ -425,7 +463,7 @@ export class LeadUsersService {
       this.leadUsers.countDocuments(filter),
     ]);
 
-    const byAgent = await this.countLeadsForAgents(items.map((item) => item._id));
+    const byAgent = await this.countLeadsForAgents(companyId, items.map((item) => item._id));
 
     return {
       items: items.map((item) => ({
@@ -439,11 +477,12 @@ export class LeadUsersService {
   }
 
   async findOneInDistrict(
+    companyId: string,
     id: string,
     state: string,
     district: string,
   ): Promise<LeadUserRecord> {
-    const row = await this.findOne(id);
+    const row = await this.findOne(companyId, id);
     const districtTerm = district.trim().toLowerCase();
     const rowDistrict = (row.district ?? "").trim().toLowerCase();
     const rowRegion = (row.region ?? "").trim().toLowerCase();
@@ -465,7 +504,7 @@ export class LeadUsersService {
 
   async createForSupervisor(
     dto: CreateLeadUserDto,
-    supervisor: { id: string; name: string; state: string; district: string },
+    supervisor: { id: string; name: string; companyId: string; state: string; district: string },
   ): Promise<LeadUserRecord> {
     dto.state = supervisor.state;
     dto.district = supervisor.district;
@@ -475,7 +514,6 @@ export class LeadUsersService {
         : dto.role === "document_verifier"
         ? "document_verifier"
         : "field_agent";
-    return this.create(dto, { id: supervisor.id, name: supervisor.name });
+    return this.create(supervisor.companyId, dto, { id: supervisor.id, name: supervisor.name });
   }
 }
-

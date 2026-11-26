@@ -6,12 +6,18 @@ import { InjectModel } from "../../../database/orm-nest";
 import type { Model } from "../../../database/orm";
 import type { AuthenticatedUser } from "../../../common/decorators/current-user.decorator";
 import { LEAD_CONNECTION } from "../../lead-collection/domain/lead-collection.constants";
-import { ADMIN_TOKEN_SCOPE, ADMIN_USER_MODEL, type AdminTokenPayload } from "../domain/super-admin.constants";
+import {
+  ADMIN_TOKEN_SCOPE,
+  ADMIN_USER_MODEL,
+  SUPER_ADMIN_ROLE,
+  type AdminTokenPayload,
+} from "../domain/super-admin.constants";
 
 /**
  * The "jwt" strategy the global JwtAuthGuard runs on every non-public route.
- * Only Super Admin console tokens pass: field-agent tokens have a different
- * issuer, audience and scope and are refused.
+ * Only console tokens (platform owner, Super Admin) pass: field-agent tokens
+ * have a different issuer, audience and scope and are refused. Suspending a
+ * company bumps its admins' tokenVersion, so their sessions end here.
  */
 @Injectable()
 export class AdminJwtStrategy extends PassportStrategy(Strategy) {
@@ -38,6 +44,8 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException("Session expired. Please log in again.");
     if (admin.status !== "active")
       throw new UnauthorizedException("This admin account is suspended.");
+    if (admin.role === SUPER_ADMIN_ROLE && !admin.companyId)
+      throw new UnauthorizedException("This admin account is not linked to a company.");
     const id = admin._id.toString();
     return {
       _id: id,
@@ -46,6 +54,7 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy) {
       email: admin.email,
       role: admin.role,
       status: admin.status,
+      companyId: admin.companyId ?? null,
       permissions: [],
       scopedAshramIds: [],
       scopedTempleIds: [],

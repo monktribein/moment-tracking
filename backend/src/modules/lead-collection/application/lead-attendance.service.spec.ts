@@ -5,6 +5,7 @@ import type { AuthenticatedLeadUser } from "../domain/lead-collection.types";
 describe("LeadAttendanceService", () => {
   const agent: AuthenticatedLeadUser = {
     id: "507f1f77bcf86cd799439011",
+    companyId: "507f1f77bcf86cd7994390aa",
     name: "Ravindra",
     phone: "7535886336",
     email: "",
@@ -21,6 +22,7 @@ describe("LeadAttendanceService", () => {
   function createAttendanceModelMock() {
     const ALLOWED_FIELDS = new Set([
       "agentId",
+      "companyId",
       "agentName",
       "agentPhone",
       "role",

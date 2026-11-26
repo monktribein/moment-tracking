@@ -49,7 +49,7 @@ export class LeadAgentController {
   ) {
     return {
       success: true,
-      data: await this.leads.list(query, this.scope(agent)),
+      data: await this.leads.list(agent.companyId, query, this.scope(agent)),
     };
   }
 
@@ -57,13 +57,14 @@ export class LeadAgentController {
   async stats(@CurrentLeadAgent() agent: AuthenticatedLeadUser) {
     return {
       success: true,
-      data: await this.leads.stats(this.scope(agent)),
+      data: await this.leads.stats(agent.companyId, this.scope(agent)),
     };
   }
 
   @Get("field-agents")
   async listDistrictFieldAgents(@CurrentLeadAgent() agent: AuthenticatedLeadUser) {
     const result = await this.leadUsers.listByDistrict(
+      agent.companyId,
       agent.state || "",
       agent.district || "",
       {
@@ -84,7 +85,7 @@ export class LeadAgentController {
   ) {
     return {
       success: true,
-      data: await this.leads.findOne(id, this.scope(agent)),
+      data: await this.leads.findOne(agent.companyId, id, this.scope(agent)),
     };
   }
 
@@ -109,7 +110,7 @@ export class LeadAgentController {
     return {
       success: true,
       message: "Lead updated",
-      data: await this.leads.update(id, dto, this.scope(agent), agent),
+      data: await this.leads.update(agent.companyId, id, dto, this.scope(agent), agent),
     };
   }
 
@@ -130,6 +131,7 @@ export class LeadAgentController {
       success: true,
       message: dto.agentId ? "Lead assigned" : "Lead unassigned",
       data: await this.leads.assign(
+        agent.companyId,
         id,
         dto.agentId,
         { name: agent.name, role: agent.role },
@@ -146,7 +148,7 @@ export class LeadAgentController {
     return {
       success: true,
       message: "Lead deleted",
-      data: await this.leads.remove(id, this.scope(agent)),
+      data: await this.leads.remove(agent.companyId, id, this.scope(agent)),
     };
   }
 }

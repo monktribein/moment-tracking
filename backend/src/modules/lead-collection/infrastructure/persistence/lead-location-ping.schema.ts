@@ -22,6 +22,8 @@ export const LeadLocationPingSchema = new Schema(
       required: true,
       index: true,
     },
+    /** The agent's company, so a live map never mixes two companies' agents. */
+    companyId: { type: String, required: true },
     agentName: { type: String, trim: true, default: "" },
     state: { type: String, trim: true, default: "", index: true },
     district: { type: String, trim: true, default: "", index: true },
@@ -58,6 +60,8 @@ export const LeadLocationPingSchema = new Schema(
 LeadLocationPingSchema.index({ agentId: 1, date: 1, recordedAt: 1 });
 // The live map reads the newest point per agent across a district.
 LeadLocationPingSchema.index({ district: 1, recordedAt: -1 });
+// ... and across a whole company, for its Super Admin.
+LeadLocationPingSchema.index({ companyId: 1, recordedAt: -1 });
 // A device that retries an upload must not double-count its distance.
 LeadLocationPingSchema.index(
   { agentId: 1, recordedAt: 1 },
