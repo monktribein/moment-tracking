@@ -163,6 +163,18 @@ export const adminApi = {
 
   leadStats: () => request<LeadStats>(`${A}/leads/stats`),
   leads: (query: LeadQuery) => request<Paged<Lead>>(`${A}/leads`, { query }),
+  /** Every lead created since `since`. The list is newest first, so paging stops at the first older one. */
+  leadsSince: async (since: Date): Promise<Lead[]> => {
+    const all: Lead[] = [];
+    for (let page = 1; page <= 50; page += 1) {
+      const data = await request<Paged<Lead>>(`${A}/leads`, { query: { page, limit: 100 } });
+      const items = data?.items ?? [];
+      all.push(...items);
+      const oldest = items[items.length - 1];
+      if (!oldest || new Date(oldest.createdAt ?? oldest.capturedAt).getTime() < since.getTime() || all.length >= Number(data.total ?? 0)) break;
+    }
+    return all;
+  },
   lead: (id: string) => request<Lead>(`${A}/leads/${enc(id)}`),
   createLead: (body: SaveLead) => request<Lead>(`${A}/leads`, { method: "POST", body }),
   updateLead: (id: string, body: SaveLead) => request<Lead>(`${A}/leads/${enc(id)}`, { method: "PUT", body }),
@@ -200,7 +212,9 @@ export const adminApi = {
       `${A}/agents/${enc(id)}/tracking`,
       { query: { date } },
     ),
-  agentDays: (id: string) => request<TrackedDay[]>(`${A}/agents/${enc(id)}/tracking/history`),
+  /** Per-day totals for days with GPS points, newest first (at most 90 days). */
+  agentDays: (id: string, range: { startDate?: string; endDate?: string } = {}) =>
+    request<TrackedDay[]>(`${A}/agents/${enc(id)}/tracking/history`, { query: range }),
   shiftRoute: (agentId: string, attendanceId: string) =>
     request<{ shift: ShiftRoute }>(`${A}/agents/${enc(agentId)}/shifts/${enc(attendanceId)}/route`),
 };
@@ -223,3 +237,17 @@ export const staffApi = {
   /** Field agents of the signed-in user's district. */
   fieldAgents: () => request<Staff[]>(`${S}/field-agents`),
 };
+
+/** Runs `work` over `items`, at most `limit` at a time, keeping the input order. */
+export async function mapLimit<T, R>(items: T[], limit: number, work: (item: T) => Promise<R>): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await work(items[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}

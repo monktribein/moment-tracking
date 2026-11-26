@@ -221,6 +221,8 @@ export interface TimelineLeg {
 }
 
 export interface TrackingDay {
+  /** YYYY-MM-DD (the backend sends it; set by the dashboard for range views). */
+  date?: string;
   totalKm: number;
   movingMinutes: number;
   idleMinutes: number;

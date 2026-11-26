@@ -1262,7 +1262,8 @@ input[type="checkbox"] {
   color: var(--muted);
   cursor: pointer;
 }
-.segmented button.active {
+.segmented button.active,
+.segmented button[aria-pressed="true"] {
   background: var(--surface);
   color: var(--primary);
   box-shadow: var(--shadow);
@@ -1564,7 +1565,7 @@ input[type="checkbox"] {
 }
 .leg {
   display: grid;
-  grid-template-columns: 16px 1fr auto;
+  grid-template-columns: 22px 1fr auto;
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -1591,6 +1592,19 @@ input[type="checkbox"] {
 .leg-stop .leg-mark {
   background: #7c3aed;
   border-radius: 3px;
+}
+/* A stop's letter: the same as its pin on the map. */
+.leg-letter {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 .leg-gap .leg-mark {
   background: #fff;
@@ -1620,6 +1634,27 @@ input[type="checkbox"] {
 }
 .row-item:hover:not(:disabled) {
   background: var(--surface-2);
+}
+.range-day {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.range-day > .row-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 10px;
+}
+.range-day > .row-item:hover {
+  border-color: var(--border-strong);
+}
+.range-note {
+  margin: -4px 0 0;
+}
+.tracking-detail .segmented button {
+  padding: 6px;
+  font-size: 13px;
 }
 .row-item:disabled {
   cursor: default;
@@ -1661,6 +1696,12 @@ input[type="checkbox"] {
 .pin-end {
   background: #dc2626;
 }
+.pin-stop {
+  width: 24px;
+  height: 24px;
+  font-size: 10.5px;
+  background: #7c3aed;
+}
 
 /* Map markers: centred on their point (Google anchors at the bottom), label on hover. */
 .map-marker {
@@ -1693,6 +1734,279 @@ input[type="checkbox"] {
 }
 .map-marker:hover .map-tip {
   display: block;
+}
+
+/* ── Overview charts ──────────────────────────────────────────────────────── */
+
+.two-col > .card.chart-card,
+.two-col > .card {
+  align-self: stretch;
+}
+.card-head .chip[aria-pressed="true"] {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.card-head .chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Ring meters: one count against its whole. */
+.ring-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 4px 0 2px;
+}
+.ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+.ring.clickable:hover {
+  background: var(--surface-2);
+  text-decoration: none;
+}
+.ring-figure {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  margin-bottom: 6px;
+}
+.ring-figure svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ring-fill {
+  transition: stroke-dasharray 0.6s ease;
+}
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.ring-center b {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.ring-center small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.ring-label {
+  font-weight: 650;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.ring-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Lead pipeline: one whole split into parts. */
+.pipeline-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 2px 0 14px;
+  flex-wrap: wrap;
+}
+.pipeline-total {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.seg-bar {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  height: 28px;
+}
+.seg-block {
+  min-width: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: default;
+  transition: opacity 0.15s;
+}
+.seg-block.dim {
+  opacity: 0.45;
+}
+.seg-block:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.seg-empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.seg-tip {
+  bottom: calc(100% + 8px);
+}
+.seg-legend {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+}
+.seg-legend li > a,
+.seg-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+  text-decoration: none;
+}
+.seg-legend li > a {
+  width: 100%;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border-radius: 6px;
+}
+.seg-legend li > a:hover {
+  background: var(--surface-2);
+}
+.seg-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.seg-legend b {
+  margin-left: auto;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Column charts. */
+.chart-body {
+  transition: opacity 0.2s;
+}
+.chart-body.reloading {
+  opacity: 0.6;
+}
+.viz-plot {
+  position: relative;
+  min-height: 210px;
+}
+.viz-plot svg {
+  display: block;
+  overflow: visible;
+}
+.viz-tick {
+  font-size: 11px;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.viz-value {
+  font-size: 11.5px;
+  font-weight: 650;
+  fill: var(--text-2);
+}
+.viz-hit {
+  cursor: default;
+  outline: none;
+}
+.viz-hit:focus-visible {
+  stroke: var(--text);
+  stroke-width: 1;
+}
+.viz-tooltip {
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.14);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.viz-tooltip b {
+  font-size: 14px;
+  color: var(--text);
+}
+.viz-tooltip span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.viz-table-wrap {
+  max-height: 260px;
+  overflow-y: auto;
+}
+.viz-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.viz-table th,
+.viz-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.viz-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+.viz-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .ring-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+  }
+  .ring-figure {
+    width: 84px;
+    height: 84px;
+  }
+  .ring-center b {
+    font-size: 20px;
+  }
+  .seg-legend {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Smaller screens ──────────────────────────────────────────────────────── */

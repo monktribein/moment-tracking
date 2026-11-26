@@ -121,3 +121,14 @@ export function generatePassword(length = 12): string {
   }
   return out.join("");
 }
+
+/** Stop labels in order: A … Z, then AA, AB, … */
+export function stopLetter(index: number): string {
+  let label = "";
+  for (let n = index + 1; n > 0; n = Math.floor((n - 1) / 26)) label = String.fromCharCode(65 + ((n - 1) % 26)) + label;
+  return label;
+}
+
+/** Whole days from `from` to `to` (YYYY-MM-DD), counting both. */
+export const daySpan = (from: string, to: string): number =>
+  Math.round((new Date(`${to}T12:00:00`).getTime() - new Date(`${from}T12:00:00`).getTime()) / 86_400_000) + 1;
