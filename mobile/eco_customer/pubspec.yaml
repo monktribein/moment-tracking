@@ -1,0 +1,45 @@
+name: eco_customer
+description: Eco Sor customer app (register products, warranty, service requests).
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.7.0 <4.0.0"
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  eco_core:
+    path: ../eco_core
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+  intl: ^0.20.2
+  mobile_scanner: ^6.0.2
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/branding/
+
+# App icon: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: assets/branding/icon.png
+  adaptive_icon_background: "#1E40AF"
+  adaptive_icon_foreground: assets/branding/icon_foreground.png
+
+# Splash: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/branding/splash.png
+  android_12:
+    color: "#FFFFFF"
+    image: assets/branding/splash.png

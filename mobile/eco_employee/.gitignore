@@ -1,0 +1,11 @@
+# Build output of this app (the parent mobile/.gitignore only covers mobile/build).
+/build/
+/coverage/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+/android/app/debug
+/android/app/profile
+/android/app/release
+# Firebase config is per project/environment: add it locally (see mobile/README.md).
+/android/app/google-services.json

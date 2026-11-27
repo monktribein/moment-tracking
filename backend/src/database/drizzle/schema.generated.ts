@@ -107,6 +107,8 @@ export const leadsLeadUsers = leadsSchema.table("lead_users", {
   "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
   "version": doublePrecision("version"), // model: __v
   "companyId": text("company_id"), // model: companyId
+  "roleId": text("role_id"), // model: roleId
+  "isActive": boolean("is_active"), // model: isActive
   _nulls: text("_nulls").array(),
   _extra: jsonb("_extra"),
 });
@@ -185,6 +187,727 @@ export const leadsCompanies = leadsSchema.table("companies", {
   "notes": text("notes"), // model: notes
   "createdByAdminId": text("created_by_admin_id"), // model: createdByAdminId
   "createdByAdminName": text("created_by_admin_name"), // model: createdByAdminName
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.attendance_corrections */
+export const leadsAttendanceCorrections = leadsSchema.table("attendance_corrections", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "attendanceId": text("attendance_id"), // model: attendanceId
+  "employeeId": text("employee_id"), // model: employeeId
+  "oldValues": jsonb("old_values"), // model: oldValues
+  "newValues": jsonb("new_values"), // model: newValues
+  "reason": text("reason"), // model: reason
+  "correctedBy": text("corrected_by"), // model: correctedBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.audit_logs */
+export const leadsAuditLogs = leadsSchema.table("audit_logs", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "actorId": text("actor_id"), // model: actorId
+  "actorRole": text("actor_role"), // model: actorRole
+  "action": text("action"), // model: action
+  "entity": text("entity"), // model: entity
+  "entityId": text("entity_id"), // model: entityId
+  "oldValues": jsonb("old_values"), // model: oldValues
+  "newValues": jsonb("new_values"), // model: newValues
+  "reason": text("reason"), // model: reason
+  "ip": text("ip"), // model: ip
+  "at": timestamp("at", { withTimezone: true, mode: "date" }), // model: at
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.call_logs */
+export const leadsCallLogs = leadsSchema.table("call_logs", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "distributorId": text("distributor_id"), // model: distributorId
+  "employeeId": text("employee_id"), // model: employeeId
+  "direction": text("direction"), // model: direction
+  "outcome": text("outcome"), // model: outcome
+  "notes": text("notes"), // model: notes
+  "nextFollowupDate": text("next_followup_date"), // model: nextFollowupDate
+  "calledAt": timestamp("called_at", { withTimezone: true, mode: "date" }), // model: calledAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.complaint_assignments */
+export const leadsComplaintAssignments = leadsSchema.table("complaint_assignments", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "complaintId": text("complaint_id"), // model: complaintId
+  "engineerId": text("engineer_id"), // model: engineerId
+  "assignedBy": text("assigned_by"), // model: assignedBy
+  "assignedAt": timestamp("assigned_at", { withTimezone: true, mode: "date" }), // model: assignedAt
+  "scheduledDate": text("scheduled_date"), // model: scheduledDate
+  "isCurrent": boolean("is_current"), // model: isCurrent
+  "unassignedAt": timestamp("unassigned_at", { withTimezone: true, mode: "date" }), // model: unassignedAt
+  "reason": text("reason"), // model: reason
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.complaint_status_logs */
+export const leadsComplaintStatusLogs = leadsSchema.table("complaint_status_logs", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "complaintId": text("complaint_id"), // model: complaintId
+  "fromStatus": text("from_status"), // model: fromStatus
+  "toStatus": text("to_status"), // model: toStatus
+  "actorId": text("actor_id"), // model: actorId
+  "reason": text("reason"), // model: reason
+  "at": timestamp("at", { withTimezone: true, mode: "date" }), // model: at
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.complaints */
+export const leadsComplaints = leadsSchema.table("complaints", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "complaintNo": text("complaint_no"), // model: complaintNo
+  "customerId": text("customer_id"), // model: customerId
+  "customerProductId": text("customer_product_id"), // model: customerProductId
+  "category": text("category"), // model: category
+  "description": text("description"), // model: description
+  "photos": jsonb("photos"), // model: photos
+  "warrantyProofKey": text("warranty_proof_key"), // model: warrantyProofKey
+  "serviceAddress": text("service_address"), // model: serviceAddress
+  "contact": text("contact"), // model: contact
+  "status": text("status"), // model: status
+  "reopenCount": doublePrecision("reopen_count"), // model: reopenCount
+  "resolvedAt": timestamp("resolved_at", { withTimezone: true, mode: "date" }), // model: resolvedAt
+  "closedAt": timestamp("closed_at", { withTimezone: true, mode: "date" }), // model: closedAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.customer_products */
+export const leadsCustomerProducts = leadsSchema.table("customer_products", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "customerId": text("customer_id"), // model: customerId
+  "category": text("category"), // model: category
+  "model": text("model"), // model: model
+  "serialNo": text("serial_no"), // model: serialNo
+  "purchaseDate": text("purchase_date"), // model: purchaseDate
+  "distributorId": text("distributor_id"), // model: distributorId
+  "proofKey": text("proof_key"), // model: proofKey
+  "warrantyStatus": text("warranty_status"), // model: warrantyStatus
+  "warrantyReviewedBy": text("warranty_reviewed_by"), // model: warrantyReviewedBy
+  "warrantyReviewedAt": timestamp("warranty_reviewed_at", { withTimezone: true, mode: "date" }), // model: warrantyReviewedAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.customers */
+export const leadsCustomers = leadsSchema.table("customers", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "name": text("name"), // model: name
+  "mobile": text("mobile"), // model: mobile
+  "mobileVerified": boolean("mobile_verified"), // model: mobileVerified
+  "email": text("email"), // model: email
+  "address": text("address"), // model: address
+  "city": text("city"), // model: city
+  "state": text("state"), // model: state
+  "pin": text("pin"), // model: pin
+  "userId": text("user_id"), // model: userId
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.distributor_assignments */
+export const leadsDistributorAssignments = leadsSchema.table("distributor_assignments", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "distributorId": text("distributor_id"), // model: distributorId
+  "employeeId": text("employee_id"), // model: employeeId
+  "assignedAt": timestamp("assigned_at", { withTimezone: true, mode: "date" }), // model: assignedAt
+  "unassignedAt": timestamp("unassigned_at", { withTimezone: true, mode: "date" }), // model: unassignedAt
+  "assignedBy": text("assigned_by"), // model: assignedBy
+  "reason": text("reason"), // model: reason
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.distributors */
+export const leadsDistributors = leadsSchema.table("distributors", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "distributorCode": text("distributor_code"), // model: distributorCode
+  "firmName": text("firm_name"), // model: firmName
+  "contactPerson": text("contact_person"), // model: contactPerson
+  "mobile": text("mobile"), // model: mobile
+  "altMobile": text("alt_mobile"), // model: altMobile
+  "email": text("email"), // model: email
+  "gstin": text("gstin"), // model: gstin
+  "address": text("address"), // model: address
+  "city": text("city"), // model: city
+  "state": text("state"), // model: state
+  "pin": text("pin"), // model: pin
+  "assignedExecutiveId": text("assigned_executive_id"), // model: assignedExecutiveId
+  "remarks": text("remarks"), // model: remarks
+  "isActive": boolean("is_active"), // model: isActive
+  "portalAccess": boolean("portal_access"), // model: portalAccess
+  "userId": text("user_id"), // model: userId
+  "createdBy": text("created_by"), // model: createdBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.doc_counters */
+export const leadsDocCounters = leadsSchema.table("doc_counters", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "kind": text("kind"), // model: kind
+  "year": doublePrecision("year"), // model: year
+  "lastValue": doublePrecision("last_value"), // model: lastValue
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.employees */
+export const leadsEmployees = leadsSchema.table("employees", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "userId": text("user_id"), // model: userId
+  "employeeCode": text("employee_code"), // model: employeeCode
+  "name": text("name"), // model: name
+  "mobile": text("mobile"), // model: mobile
+  "email": text("email"), // model: email
+  "address": text("address"), // model: address
+  "photoUrl": text("photo_url"), // model: photoUrl
+  "designation": text("designation"), // model: designation
+  "department": text("department"), // model: department
+  "roleId": text("role_id"), // model: roleId
+  "managerId": text("manager_id"), // model: managerId
+  "joiningDate": text("joining_date"), // model: joiningDate
+  "fixedSalary": doublePrecision("fixed_salary"), // model: fixedSalary
+  "weeklyOff": text("weekly_off").array(), // model: weeklyOff
+  "isActive": boolean("is_active"), // model: isActive
+  "createdBy": text("created_by"), // model: createdBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.expense_approvals */
+export const leadsExpenseApprovals = leadsSchema.table("expense_approvals", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "expenseId": text("expense_id"), // model: expenseId
+  "action": text("action"), // model: action
+  "actorId": text("actor_id"), // model: actorId
+  "reason": text("reason"), // model: reason
+  "at": timestamp("at", { withTimezone: true, mode: "date" }), // model: at
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.expenses */
+export const leadsExpenses = leadsSchema.table("expenses", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "employeeId": text("employee_id"), // model: employeeId
+  "expenseDate": text("expense_date"), // model: expenseDate
+  "category": text("category"), // model: category
+  "amount": doublePrecision("amount"), // model: amount
+  "description": text("description"), // model: description
+  "receiptKey": text("receipt_key"), // model: receiptKey
+  "visitId": text("visit_id"), // model: visitId
+  "status": text("status"), // model: status
+  "rejectionReason": text("rejection_reason"), // model: rejectionReason
+  "reimbursedAt": timestamp("reimbursed_at", { withTimezone: true, mode: "date" }), // model: reimbursedAt
+  "reimbursementRef": text("reimbursement_ref"), // model: reimbursementRef
+  "reimbursedBy": text("reimbursed_by"), // model: reimbursedBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.followups */
+export const leadsFollowups = leadsSchema.table("followups", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "distributorId": text("distributor_id"), // model: distributorId
+  "employeeId": text("employee_id"), // model: employeeId
+  "source": text("source"), // model: source
+  "visitId": text("visit_id"), // model: visitId
+  "callLogId": text("call_log_id"), // model: callLogId
+  "leadId": text("lead_id"), // model: leadId
+  "dueDate": text("due_date"), // model: dueDate
+  "status": text("status"), // model: status
+  "notes": text("notes"), // model: notes
+  "completedAt": timestamp("completed_at", { withTimezone: true, mode: "date" }), // model: completedAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.holidays */
+export const leadsHolidays = leadsSchema.table("holidays", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "holidayDate": text("holiday_date"), // model: holidayDate
+  "name": text("name"), // model: name
+  "isOptional": boolean("is_optional"), // model: isOptional
+  "createdBy": text("created_by"), // model: createdBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.leaves */
+export const leadsLeaves = leadsSchema.table("leaves", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "employeeId": text("employee_id"), // model: employeeId
+  "fromDate": text("from_date"), // model: fromDate
+  "toDate": text("to_date"), // model: toDate
+  "leaveType": text("leave_type"), // model: leaveType
+  "reason": text("reason"), // model: reason
+  "status": text("status"), // model: status
+  "approverId": text("approver_id"), // model: approverId
+  "decidedAt": timestamp("decided_at", { withTimezone: true, mode: "date" }), // model: decidedAt
+  "decisionNote": text("decision_note"), // model: decisionNote
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.notifications */
+export const leadsNotifications = leadsSchema.table("notifications", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "userId": text("user_id"), // model: userId
+  "event": text("event"), // model: event
+  "title": text("title"), // model: title
+  "body": text("body"), // model: body
+  "data": jsonb("data"), // model: data
+  "channel": text("channel"), // model: channel
+  "isRead": boolean("is_read"), // model: isRead
+  "readAt": timestamp("read_at", { withTimezone: true, mode: "date" }), // model: readAt
+  "sentAt": timestamp("sent_at", { withTimezone: true, mode: "date" }), // model: sentAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.otp_verifications */
+export const leadsOtpVerifications = leadsSchema.table("otp_verifications", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "complaintId": text("complaint_id"), // model: complaintId
+  "otpHash": text("otp_hash"), // model: otpHash
+  "expiresAt": timestamp("expires_at", { withTimezone: true, mode: "date" }), // model: expiresAt
+  "attempts": doublePrecision("attempts"), // model: attempts
+  "maxAttempts": doublePrecision("max_attempts"), // model: maxAttempts
+  "sentCount": doublePrecision("sent_count"), // model: sentCount
+  "lastSentAt": timestamp("last_sent_at", { withTimezone: true, mode: "date" }), // model: lastSentAt
+  "verifiedAt": timestamp("verified_at", { withTimezone: true, mode: "date" }), // model: verifiedAt
+  "invalidatedAt": timestamp("invalidated_at", { withTimezone: true, mode: "date" }), // model: invalidatedAt
+  "deliveryStatus": text("delivery_status"), // model: deliveryStatus
+  "requestedBy": text("requested_by"), // model: requestedBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.payment_proofs */
+export const leadsPaymentProofs = leadsSchema.table("payment_proofs", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "paymentId": text("payment_id"), // model: paymentId
+  "storageKey": text("storage_key"), // model: storageKey
+  "mime": text("mime"), // model: mime
+  "sizeBytes": doublePrecision("size_bytes"), // model: sizeBytes
+  "sha256": text("sha256"), // model: sha256
+  "uploadedBy": text("uploaded_by"), // model: uploadedBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.payment_verification_logs */
+export const leadsPaymentVerificationLogs = leadsSchema.table("payment_verification_logs", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "paymentId": text("payment_id"), // model: paymentId
+  "requestId": text("request_id"), // model: requestId
+  "action": text("action"), // model: action
+  "actorId": text("actor_id"), // model: actorId
+  "utrNormalized": text("utr_normalized"), // model: utrNormalized
+  "reason": text("reason"), // model: reason
+  "at": timestamp("at", { withTimezone: true, mode: "date" }), // model: at
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.payroll */
+export const leadsPayroll = leadsSchema.table("payroll", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "employeeId": text("employee_id"), // model: employeeId
+  "month": text("month"), // model: month
+  "fixedSalary": doublePrecision("fixed_salary"), // model: fixedSalary
+  "calcDays": doublePrecision("calc_days"), // model: calcDays
+  "payableDays": doublePrecision("payable_days"), // model: payableDays
+  "unpaidLeaveDays": doublePrecision("unpaid_leave_days"), // model: unpaidLeaveDays
+  "adjustments": doublePrecision("adjustments"), // model: adjustments
+  "adjustmentNote": text("adjustment_note"), // model: adjustmentNote
+  "netPayable": doublePrecision("net_payable"), // model: netPayable
+  "status": text("status"), // model: status
+  "approvedBy": text("approved_by"), // model: approvedBy
+  "approvedAt": timestamp("approved_at", { withTimezone: true, mode: "date" }), // model: approvedAt
+  "finalizedBy": text("finalized_by"), // model: finalizedBy
+  "finalizedAt": timestamp("finalized_at", { withTimezone: true, mode: "date" }), // model: finalizedAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.permissions */
+export const leadsPermissions = leadsSchema.table("permissions", {
+  id: text("id").primaryKey(), // model: _id
+  "code": text("code"), // model: code
+  "module": text("module"), // model: module
+  "description": text("description"), // model: description
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.products */
+export const leadsProducts = leadsSchema.table("products", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "productCode": text("product_code"), // model: productCode
+  "category": text("category"), // model: category
+  "name": text("name"), // model: name
+  "model": text("model"), // model: model
+  "sku": text("sku"), // model: sku
+  "description": text("description"), // model: description
+  "imageUrl": text("image_url"), // model: imageUrl
+  "isActive": boolean("is_active"), // model: isActive
+  "createdBy": text("created_by"), // model: createdBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.purchase_payments */
+export const leadsPurchasePayments = leadsSchema.table("purchase_payments", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "requestId": text("request_id"), // model: requestId
+  "amount": doublePrecision("amount"), // model: amount
+  "method": text("method"), // model: method
+  "paymentDate": text("payment_date"), // model: paymentDate
+  "utrRaw": text("utr_raw"), // model: utrRaw
+  "utrNormalized": text("utr_normalized"), // model: utrNormalized
+  "isActive": boolean("is_active"), // model: isActive
+  "status": text("status"), // model: status
+  "submittedBy": text("submitted_by"), // model: submittedBy
+  "reviewerId": text("reviewer_id"), // model: reviewerId
+  "reviewedAt": timestamp("reviewed_at", { withTimezone: true, mode: "date" }), // model: reviewedAt
+  "rejectionReason": text("rejection_reason"), // model: rejectionReason
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.purchase_request_items */
+export const leadsPurchaseRequestItems = leadsSchema.table("purchase_request_items", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "requestId": text("request_id"), // model: requestId
+  "productId": text("product_id"), // model: productId
+  "productSnapshot": jsonb("product_snapshot"), // model: productSnapshot
+  "quantity": doublePrecision("quantity"), // model: quantity
+  "remarks": text("remarks"), // model: remarks
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.purchase_request_versions */
+export const leadsPurchaseRequestVersions = leadsSchema.table("purchase_request_versions", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "requestId": text("request_id"), // model: requestId
+  "version": doublePrecision("version"), // model: version
+  "snapshot": jsonb("snapshot"), // model: snapshot
+  "changedBy": text("changed_by"), // model: changedBy
+  "reason": text("reason"), // model: reason
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.purchase_requests */
+export const leadsPurchaseRequests = leadsSchema.table("purchase_requests", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "requestNo": text("request_no"), // model: requestNo
+  "distributorId": text("distributor_id"), // model: distributorId
+  "source": text("source"), // model: source
+  "creatorUserId": text("creator_user_id"), // model: creatorUserId
+  "status": text("status"), // model: status
+  "paymentStatus": text("payment_status"), // model: paymentStatus
+  "remarks": text("remarks"), // model: remarks
+  "externalInvoiceRef": text("external_invoice_ref"), // model: externalInvoiceRef
+  "version": doublePrecision("version"), // model: version
+  "idempotencyKey": text("idempotency_key"), // model: idempotencyKey
+  "submittedAt": timestamp("submitted_at", { withTimezone: true, mode: "date" }), // model: submittedAt
+  "approvedBy": text("approved_by"), // model: approvedBy
+  "approvedAt": timestamp("approved_at", { withTimezone: true, mode: "date" }), // model: approvedAt
+  "processedBy": text("processed_by"), // model: processedBy
+  "processedAt": timestamp("processed_at", { withTimezone: true, mode: "date" }), // model: processedAt
+  "rejectionReason": text("rejection_reason"), // model: rejectionReason
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.purchase_status_logs */
+export const leadsPurchaseStatusLogs = leadsSchema.table("purchase_status_logs", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "requestId": text("request_id"), // model: requestId
+  "fromStatus": text("from_status"), // model: fromStatus
+  "toStatus": text("to_status"), // model: toStatus
+  "actorId": text("actor_id"), // model: actorId
+  "reason": text("reason"), // model: reason
+  "at": timestamp("at", { withTimezone: true, mode: "date" }), // model: at
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.role_permissions */
+export const leadsRolePermissions = leadsSchema.table("role_permissions", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "roleId": text("role_id"), // model: roleId
+  "permissionId": text("permission_id"), // model: permissionId
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.roles */
+export const leadsRoles = leadsSchema.table("roles", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "code": text("code"), // model: code
+  "name": text("name"), // model: name
+  "description": text("description"), // model: description
+  "isSystem": boolean("is_system"), // model: isSystem
+  "isActive": boolean("is_active"), // model: isActive
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.salary_master */
+export const leadsSalaryMaster = leadsSchema.table("salary_master", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "employeeId": text("employee_id"), // model: employeeId
+  "fixedSalary": doublePrecision("fixed_salary"), // model: fixedSalary
+  "effectiveFrom": text("effective_from"), // model: effectiveFrom
+  "createdBy": text("created_by"), // model: createdBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.sales_visits */
+export const leadsSalesVisits = leadsSchema.table("sales_visits", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "distributorId": text("distributor_id"), // model: distributorId
+  "employeeId": text("employee_id"), // model: employeeId
+  "visitDate": text("visit_date"), // model: visitDate
+  "purpose": text("purpose"), // model: purpose
+  "priority": text("priority"), // model: priority
+  "instructions": text("instructions"), // model: instructions
+  "status": text("status"), // model: status
+  "checkinLat": doublePrecision("checkin_lat"), // model: checkinLat
+  "checkinLng": doublePrecision("checkin_lng"), // model: checkinLng
+  "checkinAccuracy": doublePrecision("checkin_accuracy"), // model: checkinAccuracy
+  "checkinAt": timestamp("checkin_at", { withTimezone: true, mode: "date" }), // model: checkinAt
+  "rescheduledToId": text("rescheduled_to_id"), // model: rescheduledToId
+  "cancelReason": text("cancel_reason"), // model: cancelReason
+  "assignedBy": text("assigned_by"), // model: assignedBy
+  "createdBy": text("created_by"), // model: createdBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.service_reports */
+export const leadsServiceReports = leadsSchema.table("service_reports", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "complaintId": text("complaint_id"), // model: complaintId
+  "visitId": text("visit_id"), // model: visitId
+  "engineerId": text("engineer_id"), // model: engineerId
+  "diagnosis": text("diagnosis"), // model: diagnosis
+  "actionTaken": text("action_taken"), // model: actionTaken
+  "notes": text("notes"), // model: notes
+  "transcriptLang": text("transcript_lang"), // model: transcriptLang
+  "photos": jsonb("photos"), // model: photos
+  "furtherAction": text("further_action"), // model: furtherAction
+  "submittedAt": timestamp("submitted_at", { withTimezone: true, mode: "date" }), // model: submittedAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.service_visits */
+export const leadsServiceVisits = leadsSchema.table("service_visits", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "complaintId": text("complaint_id"), // model: complaintId
+  "assignmentId": text("assignment_id"), // model: assignmentId
+  "engineerId": text("engineer_id"), // model: engineerId
+  "scheduledDate": text("scheduled_date"), // model: scheduledDate
+  "status": text("status"), // model: status
+  "checkinLat": doublePrecision("checkin_lat"), // model: checkinLat
+  "checkinLng": doublePrecision("checkin_lng"), // model: checkinLng
+  "checkinAccuracy": doublePrecision("checkin_accuracy"), // model: checkinAccuracy
+  "checkinAt": timestamp("checkin_at", { withTimezone: true, mode: "date" }), // model: checkinAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.system_settings */
+export const leadsSystemSettings = leadsSchema.table("system_settings", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "key": text("key"), // model: key
+  "value": jsonb("value"), // model: value
+  "description": text("description"), // model: description
+  "updatedBy": text("updated_by"), // model: updatedBy
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.visit_reports */
+export const leadsVisitReports = leadsSchema.table("visit_reports", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "visitId": text("visit_id"), // model: visitId
+  "employeeId": text("employee_id"), // model: employeeId
+  "notes": text("notes"), // model: notes
+  "transcriptLang": text("transcript_lang"), // model: transcriptLang
+  "photos": jsonb("photos"), // model: photos
+  "productRequirements": jsonb("product_requirements"), // model: productRequirements
+  "nextFollowupDate": text("next_followup_date"), // model: nextFollowupDate
+  "submittedAt": timestamp("submitted_at", { withTimezone: true, mode: "date" }), // model: submittedAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.whatsapp_logs */
+export const leadsWhatsappLogs = leadsSchema.table("whatsapp_logs", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "event": text("event"), // model: event
+  "recipient": text("recipient"), // model: recipient
+  "template": text("template"), // model: template
+  "payload": jsonb("payload"), // model: payload
+  "status": text("status"), // model: status
+  "providerMsgId": text("provider_msg_id"), // model: providerMsgId
+  "retries": doublePrecision("retries"), // model: retries
+  "error": text("error"), // model: error
+  "entity": text("entity"), // model: entity
+  "entityId": text("entity_id"), // model: entityId
+  "nextRetryAt": timestamp("next_retry_at", { withTimezone: true, mode: "date" }), // model: nextRetryAt
+  "sentAt": timestamp("sent_at", { withTimezone: true, mode: "date" }), // model: sentAt
+  "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
+  "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
+  _nulls: text("_nulls").array(),
+  _extra: jsonb("_extra"),
+});
+
+/** leads.mobile_otps */
+export const leadsMobileOtps = leadsSchema.table("mobile_otps", {
+  id: text("id").primaryKey(), // model: _id
+  "companyId": text("company_id"), // model: companyId
+  "mobile": text("mobile"), // model: mobile
+  "purpose": text("purpose"), // model: purpose
+  "otpHash": text("otp_hash"), // model: otpHash
+  "expiresAt": timestamp("expires_at", { withTimezone: true, mode: "date" }), // model: expiresAt
+  "attempts": doublePrecision("attempts"), // model: attempts
+  "maxAttempts": doublePrecision("max_attempts"), // model: maxAttempts
+  "verifiedAt": timestamp("verified_at", { withTimezone: true, mode: "date" }), // model: verifiedAt
+  "invalidatedAt": timestamp("invalidated_at", { withTimezone: true, mode: "date" }), // model: invalidatedAt
+  "deliveryStatus": text("delivery_status"), // model: deliveryStatus
   "createdAt": timestamp("created_at", { withTimezone: true, mode: "date" }), // model: createdAt
   "updatedAt": timestamp("updated_at", { withTimezone: true, mode: "date" }), // model: updatedAt
   _nulls: text("_nulls").array(),

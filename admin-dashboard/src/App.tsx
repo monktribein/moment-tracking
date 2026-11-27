@@ -24,6 +24,12 @@ import Account from "./pages/admin/Account";
 import MyLeads from "./pages/staff/MyLeads";
 import FieldAgents from "./pages/staff/FieldAgents";
 import Companies from "./pages/platform/Companies";
+import { ForgotPassword, ResetPassword } from "./pages/PasswordReset";
+import EcoAccount from "./pages/EcoAccount";
+import Portal from "./pages/portal/Portal";
+import { ACCOUNT_ICON, ECO_ROUTES, allowed, ecoNav } from "./eco/routes";
+import { ROLE_NAMES, SUPER_ADMIN_VIEWER, homeFor, viewerFromEco, type Viewer } from "./eco/access";
+import { NoAccess } from "./eco/ui";
 
 // The map library loads only when Live tracking is opened.
 const Tracking = lazy(() => import("./pages/admin/Tracking"));
@@ -49,6 +55,12 @@ const STAFF_NAV: NavItem[] = [
   { to: "/agents", label: "Field agents", icon: <Users size={18} /> },
 ];
 
+/** Every Eco Sor route; pages the viewer may not open show "no access" instead. */
+const ecoRoutes = (viewer: Viewer) =>
+  ECO_ROUTES.map((r) => (
+    <Route key={r.path} path={r.path} element={allowed(viewer, r) ? <Suspense fallback={<Spinner />}>{r.element}</Suspense> : <NoAccess />} />
+  ));
+
 export default function App() {
   const { state } = useAuth();
 
@@ -59,7 +71,32 @@ export default function App() {
       </div>
     );
 
-  if (state.status === "signedOut") return <Login message={state.message} />;
+  if (state.status === "signedOut")
+    return (
+      <Routes>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<Login message={state.message} />} />
+      </Routes>
+    );
+
+  if (state.status === "eco" && state.user.role === "distributor") return <Portal user={state.user} />;
+
+  if (state.status === "eco") {
+    const user = state.user;
+    const viewer = viewerFromEco(user);
+    const home = homeFor(user.role);
+    return (
+      <Layout notifications nav={ecoNav(viewer, [{ to: "/my-account", label: "My account", icon: ACCOUNT_ICON, section: "Account" }])} userName={user.name} userLine={`${ROLE_NAMES[user.role]}${user.company ? ` · ${user.company.name}` : ""}`}>
+        <Routes>
+          {ecoRoutes(viewer)}
+          <Route path="/my-account" element={<EcoAccount user={user} />} />
+          <Route path="/" element={<Navigate to={home} replace />} />
+          <Route path="*" element={<Navigate to={home} replace />} />
+        </Routes>
+      </Layout>
+    );
+  }
 
   if (state.status === "admin" && state.admin.role === "platform_owner")
     return (
@@ -75,7 +112,9 @@ export default function App() {
   if (state.status === "admin")
     return (
       <Layout
-        nav={ADMIN_NAV}
+        notifications
+        // The company Super Admin runs both: Eco Sor operations and the existing field tracking pages.
+        nav={ecoNav(SUPER_ADMIN_VIEWER(state.admin.name), ADMIN_NAV.map((n, i) => ({ ...n, section: n.to === "/account" ? "Account" : i === 0 ? "Field tracking" : undefined })))}
         userName={state.admin.name || state.admin.email}
         userLine={state.admin.company ? `Super Admin · ${state.admin.company.name}` : "Super Admin"}
       >
@@ -87,6 +126,7 @@ export default function App() {
           <Route path="/tracking" element={<Suspense fallback={<Spinner label="Loading map…" />}><Tracking /></Suspense>} />
           <Route path="/regions" element={<Regions />} />
           <Route path="/account" element={<Account />} />
+          {ecoRoutes(SUPER_ADMIN_VIEWER(state.admin.name))}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

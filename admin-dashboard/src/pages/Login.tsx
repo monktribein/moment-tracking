@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Eye, EyeOff, Mail, Smartphone } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth";
 import { Button, ErrorBox, Field, errorText } from "../components/ui";
 
@@ -11,12 +12,13 @@ import { Button, ErrorBox, Field, errorText } from "../components/ui";
 type Mode = "email" | "mobile";
 
 const MODES: Record<Mode, { label: string; icon: ReactNode; who: string }> = {
-  email: { label: "Email", icon: <Mail size={16} />, who: "For administrators: sign in with the email your account was created with." },
-  mobile: { label: "Mobile number", icon: <Smartphone size={16} />, who: "For lead executives and supervisors: sign in with your 10-digit mobile number." },
+  email: { label: "Email", icon: <Mail size={16} />, who: "Administrators, and staff who sign in with their email." },
+  mobile: { label: "Mobile number", icon: <Smartphone size={16} />, who: "Sales, support, HR, distributors and lead executives: your 10-digit mobile number." },
 };
 
 export default function Login({ message }: { message?: string }) {
-  const { signInAdmin, signInStaff } = useAuth();
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("email");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -30,8 +32,8 @@ export default function Login({ message }: { message?: string }) {
     setError("");
     setBusy(true);
     try {
-      if (mode === "email") await signInAdmin(email.trim(), password);
-      else await signInStaff(phone.trim(), password);
+      const home = await signIn(mode, mode === "email" ? email.trim() : phone.trim(), password);
+      navigate(home, { replace: true });
     } catch (err) {
       setError(errorText(err));
       setBusy(false);
@@ -48,10 +50,10 @@ export default function Login({ message }: { message?: string }) {
     <div className="login-page">
       <div className="login-card">
         <div className="login-brand">
-          <img src="/favicon.svg" alt="" width={44} height={44} />
+          <span className="eco-wordmark" aria-label="Eco Sor"><span className="eco-bolt" aria-hidden="true">⚡</span>ECO <span className="eco-accent">SOR</span></span>
           <div>
-            <h1>Movement Tracking</h1>
-            <p className="muted">Sign in to your workspace</p>
+            <h1>Sign in</h1>
+            <p className="muted">Business Operations &amp; Movement Tracking</p>
           </div>
         </div>
 
@@ -108,7 +110,9 @@ export default function Login({ message }: { message?: string }) {
             Sign in
           </Button>
         </form>
-        <p className="login-foot muted">Forgot your password? Ask the person who created your account to reset it. Field agents use the mobile app.</p>
+        <p className="login-foot muted">
+          <Link to="/forgot-password">Forgot your password?</Link> Staff and distributors get a reset code on WhatsApp. Administrators: ask the platform owner. Field agents, engineers and customers use the mobile app.
+        </p>
       </div>
     </div>
   );

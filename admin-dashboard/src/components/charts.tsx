@@ -2,7 +2,7 @@ import { useEffect, useId, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 /** Chart colours: one accent for single-series charts and meters, with a lighter step of it as the track. */
-export const VIZ = { accent: "#4338ca", track: "#e4e6fb", grid: "#e9ebf0", axis: "#cfd3dc" };
+export const VIZ = { accent: "#1e40af", track: "#dbe4ff", grid: "#e9ebf0", axis: "#cfd3dc" };
 
 /**
  * A callback ref and the content width in px of the element it is on (0 until measured).

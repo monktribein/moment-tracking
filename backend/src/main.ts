@@ -78,9 +78,11 @@ async function bootstrap(): Promise<void> {
     const swagger = new DocumentBuilder()
       .setTitle("Movement Tracking API")
       .setDescription(
-        "Field agents, leads, attendance and GPS movement tracking.\n\n" +
+        "Field agents, leads, attendance and GPS movement tracking, plus the Eco Sor Business Operations Platform.\n\n" +
           "Super Admin: POST /api/auth/login, then send `Authorization: Bearer <token>` to /api/lead-collection/admin/*.\n" +
-          "Field agents: POST /api/lead-collection/auth/login, then the agent token on /api/lead-collection/agent/* (supervisors also /supervisor/*).",
+          "Field agents: POST /api/lead-collection/auth/login, then the agent token on /api/lead-collection/agent/* (supervisors also /supervisor/*).\n" +
+          "Eco Sor (staff, distributors, customers): POST /api/v1/auth/login with email or mobile + password, then the token on every /api/v1/* route. " +
+          "A company Super Admin console token also works on /api/v1/* (as the admin role).",
       )
       .setVersion("1.0")
       .addBearerAuth()
