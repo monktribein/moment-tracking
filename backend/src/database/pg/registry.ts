@@ -42,6 +42,8 @@ export interface TableDef {
   schema: string;
   table: string;
   idKind: "objectId" | "string";
+  /** "sql": created by a hand-written migration and registered by database/register-sql.js (no Mongoose model). */
+  managedBy?: "sql";
   columns: ColumnDef[];
   indexes: IndexDef[];
 }

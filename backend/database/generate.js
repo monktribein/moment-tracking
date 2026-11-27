@@ -134,7 +134,8 @@ for (const d of defs) {
 }
 
 const prune = process.argv.includes("--prune");
-const orphans = tables.filter((t) => !groups.has(`${t.database}.${t.collection}`));
+// Tables created by hand-written SQL migrations (database/register-sql.js) have no Mongoose model on purpose.
+const orphans = tables.filter((t) => t.managedBy !== "sql" && !groups.has(`${t.database}.${t.collection}`));
 if (prune) {
   const gone = new Set(orphans);
   tables = tables.filter((t) => !gone.has(t));

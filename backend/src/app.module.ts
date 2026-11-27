@@ -14,6 +14,22 @@ import { PlatformModule } from "./modules/platform/platform.module";
 // The lead system: field agents, leads, regions, attendance, GPS tracking and
 // supervisor tools. Routes: /api/lead-collection/*.
 import { LeadCollectionModule } from "./modules/lead-collection/lead-collection.module";
+// Eco Sor Business Operations Platform. Routes: /api/v1/*.
+import { SqlModule } from "./database/sql/sql.module";
+import { AuditModule } from "./modules/audit/audit.module";
+import { RbacModule } from "./modules/rbac/rbac.module";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
+import { UploadsModule } from "./modules/uploads/uploads.module";
+import { UsersEmployeesModule } from "./modules/users-employees/users-employees.module";
+import { ProductsModule } from "./modules/products/products.module";
+import { DistributorsModule } from "./modules/distributors/distributors.module";
+import { SalesModule } from "./modules/sales/sales.module";
+import { PaymentsModule } from "./modules/payments/payments.module";
+import { PurchasesModule } from "./modules/purchases/purchases.module";
+import { CustomersComplaintsModule } from "./modules/customers-complaints/customers-complaints.module";
+import { ServiceModule } from "./modules/service/service.module";
+import { HrModule } from "./modules/hr/hr.module";
+import { DashboardReportsModule } from "./modules/dashboard-reports/dashboard-reports.module";
 import { hybridRateLimitTracker, ipRateLimitTracker } from "./common/throttling/rate-limit-trackers";
 
 @Module({
@@ -66,6 +82,21 @@ import { hybridRateLimitTracker, ipRateLimitTracker } from "./common/throttling/
     SuperAdminModule,
     PlatformModule,
     LeadCollectionModule,
+    SqlModule,
+    AuditModule,
+    RbacModule,
+    NotificationsModule,
+    UploadsModule,
+    UsersEmployeesModule,
+    ProductsModule,
+    DistributorsModule,
+    SalesModule,
+    PaymentsModule,
+    PurchasesModule,
+    CustomersComplaintsModule,
+    ServiceModule,
+    HrModule,
+    DashboardReportsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

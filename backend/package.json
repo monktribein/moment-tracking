@@ -15,7 +15,9 @@
     "typecheck": "tsc --noEmit --incremental false",
     "db:generate": "node database/generate.js",
     "db:migrate": "node database/migrate.js",
-    "db:verify": "node database/verify.js"
+    "db:verify": "node database/verify.js",
+    "db:register": "node database/register-sql.js",
+    "db:seed": "node database/seed.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.6",

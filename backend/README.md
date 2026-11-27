@@ -135,6 +135,20 @@ Assignment rules:
 Rules: check-in needs GPS coordinates; shifts left open are closed 9 hours
 after check-in (`LEAD_AUTO_CHECKOUT_ENABLED=false` turns this off); raw GPS points are kept 180 days.
 
+## Eco Sor Business Operations API (`/api/v1`)
+
+Distributors, purchase requests and payment verification, sales visits, customer complaints with OTP closure, HR and payroll (spec: `docs/Eco_Sor_SRS_V2.docx`). Swagger lists every route at `/api/docs`.
+
+- **Sign in:** `POST /api/v1/auth/login` with `{ identifier, password }` (email or 10-digit mobile). Staff, distributors and customers use the same endpoint; `GET /api/v1/auth/me` returns the role and permissions. A company Super Admin's console token also works on `/api/v1/*`, as the `admin` role. Sessions last `ECO_JWT_EXPIRES_IN` (default 8h); deactivating a user, logging out or changing the password ends them at once.
+- **Authorization:** every route is checked on the server by `@RequireRoles` / `@Permissions` (modules/rbac). The nine roles and their default permissions are in `rbac.constants.ts`; they are created for each company on first use and editable with `PUT /api/v1/roles/:id/permissions`.
+- **Ownership:** a distributor sees only its own requests and payments, tele/field sales only their assigned distributors, an engineer only their assigned complaints, a customer only their own. Anything else is "not found".
+- **Data access:** these tables are SQL-managed (migrations 0004+), so the modules use raw SQL through `SqlService` (real transactions, `FOR UPDATE` row locks, partial unique indexes), not the Mongoose-style models. Never add a `NOT NULL` column to a model-backed table such as `lead_users` without a default trigger: the model layer inserts NULL for registered columns it does not set (see 0011).
+- **Audit:** every state change calls `AuditService.log(...)` inside the same transaction; `audit_logs` is append-only (`GET /api/v1/audit-logs`, admin).
+- **Purchase requests:** state machine in `modules/purchases/domain/purchase-state.ts`. `Idempotency-Key` header on `POST /purchase-requests`; approval needs a verified payment and runs under a row lock; a verified UTR can never be allocated twice.
+- **Private files:** payment proofs and receipts go to private storage (`STORAGE_DRIVER=local|s3`) and are opened only through short-lived signed links (`GET /payments/:id/proof-url`, `GET /uploads/url`).
+- **WhatsApp:** `WHATSAPP_PROVIDER=log|meta|interakt|gupshup` (credentials in env only). Every message is saved in `whatsapp_logs`; failures are retried up to 3 times every minute. One-time codes are never stored or logged and are never retried.
+- **Tests:** `npm test` (rules), `npm run test:pg` (`test/eco-flow.pg-spec.ts` runs the whole API on a real Postgres).
+
 ## Deploying (separate server)
 
 1. Server env: everything in `.env.example`, with `NODE_ENV=production`, the production database

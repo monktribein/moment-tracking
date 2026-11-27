@@ -590,6 +590,16 @@ export const REGISTRY: Registry = {
      "field": "companyId",
      "column": "company_id",
      "kind": "string"
+    },
+    {
+     "field": "roleId",
+     "column": "role_id",
+     "kind": "string"
+    },
+    {
+     "field": "isActive",
+     "column": "is_active",
+     "kind": "boolean"
     }
    ],
    "indexes": [
@@ -1108,6 +1118,2675 @@ export const REGISTRY: Registry = {
      "enforced": true
     }
    ]
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "attendance_corrections",
+   "schema": "leads",
+   "table": "attendance_corrections",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "attendanceId",
+     "column": "attendance_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "oldValues",
+     "column": "old_values",
+     "kind": "json"
+    },
+    {
+     "field": "newValues",
+     "column": "new_values",
+     "kind": "json"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "correctedBy",
+     "column": "corrected_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "audit_logs",
+   "schema": "leads",
+   "table": "audit_logs",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "actorId",
+     "column": "actor_id",
+     "kind": "string"
+    },
+    {
+     "field": "actorRole",
+     "column": "actor_role",
+     "kind": "string"
+    },
+    {
+     "field": "action",
+     "column": "action",
+     "kind": "string"
+    },
+    {
+     "field": "entity",
+     "column": "entity",
+     "kind": "string"
+    },
+    {
+     "field": "entityId",
+     "column": "entity_id",
+     "kind": "string"
+    },
+    {
+     "field": "oldValues",
+     "column": "old_values",
+     "kind": "json"
+    },
+    {
+     "field": "newValues",
+     "column": "new_values",
+     "kind": "json"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "ip",
+     "column": "ip",
+     "kind": "string"
+    },
+    {
+     "field": "at",
+     "column": "at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "call_logs",
+   "schema": "leads",
+   "table": "call_logs",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "distributorId",
+     "column": "distributor_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "direction",
+     "column": "direction",
+     "kind": "string"
+    },
+    {
+     "field": "outcome",
+     "column": "outcome",
+     "kind": "string"
+    },
+    {
+     "field": "notes",
+     "column": "notes",
+     "kind": "string"
+    },
+    {
+     "field": "nextFollowupDate",
+     "column": "next_followup_date",
+     "kind": "string"
+    },
+    {
+     "field": "calledAt",
+     "column": "called_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "complaint_assignments",
+   "schema": "leads",
+   "table": "complaint_assignments",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "complaintId",
+     "column": "complaint_id",
+     "kind": "string"
+    },
+    {
+     "field": "engineerId",
+     "column": "engineer_id",
+     "kind": "string"
+    },
+    {
+     "field": "assignedBy",
+     "column": "assigned_by",
+     "kind": "string"
+    },
+    {
+     "field": "assignedAt",
+     "column": "assigned_at",
+     "kind": "date"
+    },
+    {
+     "field": "scheduledDate",
+     "column": "scheduled_date",
+     "kind": "string"
+    },
+    {
+     "field": "isCurrent",
+     "column": "is_current",
+     "kind": "boolean"
+    },
+    {
+     "field": "unassignedAt",
+     "column": "unassigned_at",
+     "kind": "date"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "complaint_status_logs",
+   "schema": "leads",
+   "table": "complaint_status_logs",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "complaintId",
+     "column": "complaint_id",
+     "kind": "string"
+    },
+    {
+     "field": "fromStatus",
+     "column": "from_status",
+     "kind": "string"
+    },
+    {
+     "field": "toStatus",
+     "column": "to_status",
+     "kind": "string"
+    },
+    {
+     "field": "actorId",
+     "column": "actor_id",
+     "kind": "string"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "at",
+     "column": "at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "complaints",
+   "schema": "leads",
+   "table": "complaints",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "complaintNo",
+     "column": "complaint_no",
+     "kind": "string"
+    },
+    {
+     "field": "customerId",
+     "column": "customer_id",
+     "kind": "string"
+    },
+    {
+     "field": "customerProductId",
+     "column": "customer_product_id",
+     "kind": "string"
+    },
+    {
+     "field": "category",
+     "column": "category",
+     "kind": "string"
+    },
+    {
+     "field": "description",
+     "column": "description",
+     "kind": "string"
+    },
+    {
+     "field": "photos",
+     "column": "photos",
+     "kind": "json"
+    },
+    {
+     "field": "warrantyProofKey",
+     "column": "warranty_proof_key",
+     "kind": "string"
+    },
+    {
+     "field": "serviceAddress",
+     "column": "service_address",
+     "kind": "string"
+    },
+    {
+     "field": "contact",
+     "column": "contact",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "reopenCount",
+     "column": "reopen_count",
+     "kind": "number"
+    },
+    {
+     "field": "resolvedAt",
+     "column": "resolved_at",
+     "kind": "date"
+    },
+    {
+     "field": "closedAt",
+     "column": "closed_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "customer_products",
+   "schema": "leads",
+   "table": "customer_products",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "customerId",
+     "column": "customer_id",
+     "kind": "string"
+    },
+    {
+     "field": "category",
+     "column": "category",
+     "kind": "string"
+    },
+    {
+     "field": "model",
+     "column": "model",
+     "kind": "string"
+    },
+    {
+     "field": "serialNo",
+     "column": "serial_no",
+     "kind": "string"
+    },
+    {
+     "field": "purchaseDate",
+     "column": "purchase_date",
+     "kind": "string"
+    },
+    {
+     "field": "distributorId",
+     "column": "distributor_id",
+     "kind": "string"
+    },
+    {
+     "field": "proofKey",
+     "column": "proof_key",
+     "kind": "string"
+    },
+    {
+     "field": "warrantyStatus",
+     "column": "warranty_status",
+     "kind": "string"
+    },
+    {
+     "field": "warrantyReviewedBy",
+     "column": "warranty_reviewed_by",
+     "kind": "string"
+    },
+    {
+     "field": "warrantyReviewedAt",
+     "column": "warranty_reviewed_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "customers",
+   "schema": "leads",
+   "table": "customers",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "name",
+     "column": "name",
+     "kind": "string"
+    },
+    {
+     "field": "mobile",
+     "column": "mobile",
+     "kind": "string"
+    },
+    {
+     "field": "mobileVerified",
+     "column": "mobile_verified",
+     "kind": "boolean"
+    },
+    {
+     "field": "email",
+     "column": "email",
+     "kind": "string"
+    },
+    {
+     "field": "address",
+     "column": "address",
+     "kind": "string"
+    },
+    {
+     "field": "city",
+     "column": "city",
+     "kind": "string"
+    },
+    {
+     "field": "state",
+     "column": "state",
+     "kind": "string"
+    },
+    {
+     "field": "pin",
+     "column": "pin",
+     "kind": "string"
+    },
+    {
+     "field": "userId",
+     "column": "user_id",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "distributor_assignments",
+   "schema": "leads",
+   "table": "distributor_assignments",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "distributorId",
+     "column": "distributor_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "assignedAt",
+     "column": "assigned_at",
+     "kind": "date"
+    },
+    {
+     "field": "unassignedAt",
+     "column": "unassigned_at",
+     "kind": "date"
+    },
+    {
+     "field": "assignedBy",
+     "column": "assigned_by",
+     "kind": "string"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "distributors",
+   "schema": "leads",
+   "table": "distributors",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "distributorCode",
+     "column": "distributor_code",
+     "kind": "string"
+    },
+    {
+     "field": "firmName",
+     "column": "firm_name",
+     "kind": "string"
+    },
+    {
+     "field": "contactPerson",
+     "column": "contact_person",
+     "kind": "string"
+    },
+    {
+     "field": "mobile",
+     "column": "mobile",
+     "kind": "string"
+    },
+    {
+     "field": "altMobile",
+     "column": "alt_mobile",
+     "kind": "string"
+    },
+    {
+     "field": "email",
+     "column": "email",
+     "kind": "string"
+    },
+    {
+     "field": "gstin",
+     "column": "gstin",
+     "kind": "string"
+    },
+    {
+     "field": "address",
+     "column": "address",
+     "kind": "string"
+    },
+    {
+     "field": "city",
+     "column": "city",
+     "kind": "string"
+    },
+    {
+     "field": "state",
+     "column": "state",
+     "kind": "string"
+    },
+    {
+     "field": "pin",
+     "column": "pin",
+     "kind": "string"
+    },
+    {
+     "field": "assignedExecutiveId",
+     "column": "assigned_executive_id",
+     "kind": "string"
+    },
+    {
+     "field": "remarks",
+     "column": "remarks",
+     "kind": "string"
+    },
+    {
+     "field": "isActive",
+     "column": "is_active",
+     "kind": "boolean"
+    },
+    {
+     "field": "portalAccess",
+     "column": "portal_access",
+     "kind": "boolean"
+    },
+    {
+     "field": "userId",
+     "column": "user_id",
+     "kind": "string"
+    },
+    {
+     "field": "createdBy",
+     "column": "created_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "doc_counters",
+   "schema": "leads",
+   "table": "doc_counters",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "kind",
+     "column": "kind",
+     "kind": "string"
+    },
+    {
+     "field": "year",
+     "column": "year",
+     "kind": "number"
+    },
+    {
+     "field": "lastValue",
+     "column": "last_value",
+     "kind": "number"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "employees",
+   "schema": "leads",
+   "table": "employees",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "userId",
+     "column": "user_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeCode",
+     "column": "employee_code",
+     "kind": "string"
+    },
+    {
+     "field": "name",
+     "column": "name",
+     "kind": "string"
+    },
+    {
+     "field": "mobile",
+     "column": "mobile",
+     "kind": "string"
+    },
+    {
+     "field": "email",
+     "column": "email",
+     "kind": "string"
+    },
+    {
+     "field": "address",
+     "column": "address",
+     "kind": "string"
+    },
+    {
+     "field": "photoUrl",
+     "column": "photo_url",
+     "kind": "string"
+    },
+    {
+     "field": "designation",
+     "column": "designation",
+     "kind": "string"
+    },
+    {
+     "field": "department",
+     "column": "department",
+     "kind": "string"
+    },
+    {
+     "field": "roleId",
+     "column": "role_id",
+     "kind": "string"
+    },
+    {
+     "field": "managerId",
+     "column": "manager_id",
+     "kind": "string"
+    },
+    {
+     "field": "joiningDate",
+     "column": "joining_date",
+     "kind": "string"
+    },
+    {
+     "field": "fixedSalary",
+     "column": "fixed_salary",
+     "kind": "number"
+    },
+    {
+     "field": "weeklyOff",
+     "column": "weekly_off",
+     "kind": "string[]"
+    },
+    {
+     "field": "isActive",
+     "column": "is_active",
+     "kind": "boolean"
+    },
+    {
+     "field": "createdBy",
+     "column": "created_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "expense_approvals",
+   "schema": "leads",
+   "table": "expense_approvals",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "expenseId",
+     "column": "expense_id",
+     "kind": "string"
+    },
+    {
+     "field": "action",
+     "column": "action",
+     "kind": "string"
+    },
+    {
+     "field": "actorId",
+     "column": "actor_id",
+     "kind": "string"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "at",
+     "column": "at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "expenses",
+   "schema": "leads",
+   "table": "expenses",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "expenseDate",
+     "column": "expense_date",
+     "kind": "string"
+    },
+    {
+     "field": "category",
+     "column": "category",
+     "kind": "string"
+    },
+    {
+     "field": "amount",
+     "column": "amount",
+     "kind": "number"
+    },
+    {
+     "field": "description",
+     "column": "description",
+     "kind": "string"
+    },
+    {
+     "field": "receiptKey",
+     "column": "receipt_key",
+     "kind": "string"
+    },
+    {
+     "field": "visitId",
+     "column": "visit_id",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "rejectionReason",
+     "column": "rejection_reason",
+     "kind": "string"
+    },
+    {
+     "field": "reimbursedAt",
+     "column": "reimbursed_at",
+     "kind": "date"
+    },
+    {
+     "field": "reimbursementRef",
+     "column": "reimbursement_ref",
+     "kind": "string"
+    },
+    {
+     "field": "reimbursedBy",
+     "column": "reimbursed_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "followups",
+   "schema": "leads",
+   "table": "followups",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "distributorId",
+     "column": "distributor_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "source",
+     "column": "source",
+     "kind": "string"
+    },
+    {
+     "field": "visitId",
+     "column": "visit_id",
+     "kind": "string"
+    },
+    {
+     "field": "callLogId",
+     "column": "call_log_id",
+     "kind": "string"
+    },
+    {
+     "field": "leadId",
+     "column": "lead_id",
+     "kind": "string"
+    },
+    {
+     "field": "dueDate",
+     "column": "due_date",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "notes",
+     "column": "notes",
+     "kind": "string"
+    },
+    {
+     "field": "completedAt",
+     "column": "completed_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "holidays",
+   "schema": "leads",
+   "table": "holidays",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "holidayDate",
+     "column": "holiday_date",
+     "kind": "string"
+    },
+    {
+     "field": "name",
+     "column": "name",
+     "kind": "string"
+    },
+    {
+     "field": "isOptional",
+     "column": "is_optional",
+     "kind": "boolean"
+    },
+    {
+     "field": "createdBy",
+     "column": "created_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "leaves",
+   "schema": "leads",
+   "table": "leaves",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "fromDate",
+     "column": "from_date",
+     "kind": "string"
+    },
+    {
+     "field": "toDate",
+     "column": "to_date",
+     "kind": "string"
+    },
+    {
+     "field": "leaveType",
+     "column": "leave_type",
+     "kind": "string"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "approverId",
+     "column": "approver_id",
+     "kind": "string"
+    },
+    {
+     "field": "decidedAt",
+     "column": "decided_at",
+     "kind": "date"
+    },
+    {
+     "field": "decisionNote",
+     "column": "decision_note",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "notifications",
+   "schema": "leads",
+   "table": "notifications",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "userId",
+     "column": "user_id",
+     "kind": "string"
+    },
+    {
+     "field": "event",
+     "column": "event",
+     "kind": "string"
+    },
+    {
+     "field": "title",
+     "column": "title",
+     "kind": "string"
+    },
+    {
+     "field": "body",
+     "column": "body",
+     "kind": "string"
+    },
+    {
+     "field": "data",
+     "column": "data",
+     "kind": "json"
+    },
+    {
+     "field": "channel",
+     "column": "channel",
+     "kind": "string"
+    },
+    {
+     "field": "isRead",
+     "column": "is_read",
+     "kind": "boolean"
+    },
+    {
+     "field": "readAt",
+     "column": "read_at",
+     "kind": "date"
+    },
+    {
+     "field": "sentAt",
+     "column": "sent_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "otp_verifications",
+   "schema": "leads",
+   "table": "otp_verifications",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "complaintId",
+     "column": "complaint_id",
+     "kind": "string"
+    },
+    {
+     "field": "otpHash",
+     "column": "otp_hash",
+     "kind": "string"
+    },
+    {
+     "field": "expiresAt",
+     "column": "expires_at",
+     "kind": "date"
+    },
+    {
+     "field": "attempts",
+     "column": "attempts",
+     "kind": "number"
+    },
+    {
+     "field": "maxAttempts",
+     "column": "max_attempts",
+     "kind": "number"
+    },
+    {
+     "field": "sentCount",
+     "column": "sent_count",
+     "kind": "number"
+    },
+    {
+     "field": "lastSentAt",
+     "column": "last_sent_at",
+     "kind": "date"
+    },
+    {
+     "field": "verifiedAt",
+     "column": "verified_at",
+     "kind": "date"
+    },
+    {
+     "field": "invalidatedAt",
+     "column": "invalidated_at",
+     "kind": "date"
+    },
+    {
+     "field": "deliveryStatus",
+     "column": "delivery_status",
+     "kind": "string"
+    },
+    {
+     "field": "requestedBy",
+     "column": "requested_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "payment_proofs",
+   "schema": "leads",
+   "table": "payment_proofs",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "paymentId",
+     "column": "payment_id",
+     "kind": "string"
+    },
+    {
+     "field": "storageKey",
+     "column": "storage_key",
+     "kind": "string"
+    },
+    {
+     "field": "mime",
+     "column": "mime",
+     "kind": "string"
+    },
+    {
+     "field": "sizeBytes",
+     "column": "size_bytes",
+     "kind": "number"
+    },
+    {
+     "field": "sha256",
+     "column": "sha256",
+     "kind": "string"
+    },
+    {
+     "field": "uploadedBy",
+     "column": "uploaded_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "payment_verification_logs",
+   "schema": "leads",
+   "table": "payment_verification_logs",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "paymentId",
+     "column": "payment_id",
+     "kind": "string"
+    },
+    {
+     "field": "requestId",
+     "column": "request_id",
+     "kind": "string"
+    },
+    {
+     "field": "action",
+     "column": "action",
+     "kind": "string"
+    },
+    {
+     "field": "actorId",
+     "column": "actor_id",
+     "kind": "string"
+    },
+    {
+     "field": "utrNormalized",
+     "column": "utr_normalized",
+     "kind": "string"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "at",
+     "column": "at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "payroll",
+   "schema": "leads",
+   "table": "payroll",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "month",
+     "column": "month",
+     "kind": "string"
+    },
+    {
+     "field": "fixedSalary",
+     "column": "fixed_salary",
+     "kind": "number"
+    },
+    {
+     "field": "calcDays",
+     "column": "calc_days",
+     "kind": "number"
+    },
+    {
+     "field": "payableDays",
+     "column": "payable_days",
+     "kind": "number"
+    },
+    {
+     "field": "unpaidLeaveDays",
+     "column": "unpaid_leave_days",
+     "kind": "number"
+    },
+    {
+     "field": "adjustments",
+     "column": "adjustments",
+     "kind": "number"
+    },
+    {
+     "field": "adjustmentNote",
+     "column": "adjustment_note",
+     "kind": "string"
+    },
+    {
+     "field": "netPayable",
+     "column": "net_payable",
+     "kind": "number"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "approvedBy",
+     "column": "approved_by",
+     "kind": "string"
+    },
+    {
+     "field": "approvedAt",
+     "column": "approved_at",
+     "kind": "date"
+    },
+    {
+     "field": "finalizedBy",
+     "column": "finalized_by",
+     "kind": "string"
+    },
+    {
+     "field": "finalizedAt",
+     "column": "finalized_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "permissions",
+   "schema": "leads",
+   "table": "permissions",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "code",
+     "column": "code",
+     "kind": "string"
+    },
+    {
+     "field": "module",
+     "column": "module",
+     "kind": "string"
+    },
+    {
+     "field": "description",
+     "column": "description",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "products",
+   "schema": "leads",
+   "table": "products",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "productCode",
+     "column": "product_code",
+     "kind": "string"
+    },
+    {
+     "field": "category",
+     "column": "category",
+     "kind": "string"
+    },
+    {
+     "field": "name",
+     "column": "name",
+     "kind": "string"
+    },
+    {
+     "field": "model",
+     "column": "model",
+     "kind": "string"
+    },
+    {
+     "field": "sku",
+     "column": "sku",
+     "kind": "string"
+    },
+    {
+     "field": "description",
+     "column": "description",
+     "kind": "string"
+    },
+    {
+     "field": "imageUrl",
+     "column": "image_url",
+     "kind": "string"
+    },
+    {
+     "field": "isActive",
+     "column": "is_active",
+     "kind": "boolean"
+    },
+    {
+     "field": "createdBy",
+     "column": "created_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "purchase_payments",
+   "schema": "leads",
+   "table": "purchase_payments",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "requestId",
+     "column": "request_id",
+     "kind": "string"
+    },
+    {
+     "field": "amount",
+     "column": "amount",
+     "kind": "number"
+    },
+    {
+     "field": "method",
+     "column": "method",
+     "kind": "string"
+    },
+    {
+     "field": "paymentDate",
+     "column": "payment_date",
+     "kind": "string"
+    },
+    {
+     "field": "utrRaw",
+     "column": "utr_raw",
+     "kind": "string"
+    },
+    {
+     "field": "utrNormalized",
+     "column": "utr_normalized",
+     "kind": "string"
+    },
+    {
+     "field": "isActive",
+     "column": "is_active",
+     "kind": "boolean"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "submittedBy",
+     "column": "submitted_by",
+     "kind": "string"
+    },
+    {
+     "field": "reviewerId",
+     "column": "reviewer_id",
+     "kind": "string"
+    },
+    {
+     "field": "reviewedAt",
+     "column": "reviewed_at",
+     "kind": "date"
+    },
+    {
+     "field": "rejectionReason",
+     "column": "rejection_reason",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "purchase_request_items",
+   "schema": "leads",
+   "table": "purchase_request_items",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "requestId",
+     "column": "request_id",
+     "kind": "string"
+    },
+    {
+     "field": "productId",
+     "column": "product_id",
+     "kind": "string"
+    },
+    {
+     "field": "productSnapshot",
+     "column": "product_snapshot",
+     "kind": "json"
+    },
+    {
+     "field": "quantity",
+     "column": "quantity",
+     "kind": "number"
+    },
+    {
+     "field": "remarks",
+     "column": "remarks",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "purchase_request_versions",
+   "schema": "leads",
+   "table": "purchase_request_versions",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "requestId",
+     "column": "request_id",
+     "kind": "string"
+    },
+    {
+     "field": "version",
+     "column": "version",
+     "kind": "number"
+    },
+    {
+     "field": "snapshot",
+     "column": "snapshot",
+     "kind": "json"
+    },
+    {
+     "field": "changedBy",
+     "column": "changed_by",
+     "kind": "string"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "purchase_requests",
+   "schema": "leads",
+   "table": "purchase_requests",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "requestNo",
+     "column": "request_no",
+     "kind": "string"
+    },
+    {
+     "field": "distributorId",
+     "column": "distributor_id",
+     "kind": "string"
+    },
+    {
+     "field": "source",
+     "column": "source",
+     "kind": "string"
+    },
+    {
+     "field": "creatorUserId",
+     "column": "creator_user_id",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "paymentStatus",
+     "column": "payment_status",
+     "kind": "string"
+    },
+    {
+     "field": "remarks",
+     "column": "remarks",
+     "kind": "string"
+    },
+    {
+     "field": "externalInvoiceRef",
+     "column": "external_invoice_ref",
+     "kind": "string"
+    },
+    {
+     "field": "version",
+     "column": "version",
+     "kind": "number"
+    },
+    {
+     "field": "idempotencyKey",
+     "column": "idempotency_key",
+     "kind": "string"
+    },
+    {
+     "field": "submittedAt",
+     "column": "submitted_at",
+     "kind": "date"
+    },
+    {
+     "field": "approvedBy",
+     "column": "approved_by",
+     "kind": "string"
+    },
+    {
+     "field": "approvedAt",
+     "column": "approved_at",
+     "kind": "date"
+    },
+    {
+     "field": "processedBy",
+     "column": "processed_by",
+     "kind": "string"
+    },
+    {
+     "field": "processedAt",
+     "column": "processed_at",
+     "kind": "date"
+    },
+    {
+     "field": "rejectionReason",
+     "column": "rejection_reason",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "purchase_status_logs",
+   "schema": "leads",
+   "table": "purchase_status_logs",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "requestId",
+     "column": "request_id",
+     "kind": "string"
+    },
+    {
+     "field": "fromStatus",
+     "column": "from_status",
+     "kind": "string"
+    },
+    {
+     "field": "toStatus",
+     "column": "to_status",
+     "kind": "string"
+    },
+    {
+     "field": "actorId",
+     "column": "actor_id",
+     "kind": "string"
+    },
+    {
+     "field": "reason",
+     "column": "reason",
+     "kind": "string"
+    },
+    {
+     "field": "at",
+     "column": "at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "role_permissions",
+   "schema": "leads",
+   "table": "role_permissions",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "roleId",
+     "column": "role_id",
+     "kind": "string"
+    },
+    {
+     "field": "permissionId",
+     "column": "permission_id",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "roles",
+   "schema": "leads",
+   "table": "roles",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "code",
+     "column": "code",
+     "kind": "string"
+    },
+    {
+     "field": "name",
+     "column": "name",
+     "kind": "string"
+    },
+    {
+     "field": "description",
+     "column": "description",
+     "kind": "string"
+    },
+    {
+     "field": "isSystem",
+     "column": "is_system",
+     "kind": "boolean"
+    },
+    {
+     "field": "isActive",
+     "column": "is_active",
+     "kind": "boolean"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "salary_master",
+   "schema": "leads",
+   "table": "salary_master",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "fixedSalary",
+     "column": "fixed_salary",
+     "kind": "number"
+    },
+    {
+     "field": "effectiveFrom",
+     "column": "effective_from",
+     "kind": "string"
+    },
+    {
+     "field": "createdBy",
+     "column": "created_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "sales_visits",
+   "schema": "leads",
+   "table": "sales_visits",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "distributorId",
+     "column": "distributor_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "visitDate",
+     "column": "visit_date",
+     "kind": "string"
+    },
+    {
+     "field": "purpose",
+     "column": "purpose",
+     "kind": "string"
+    },
+    {
+     "field": "priority",
+     "column": "priority",
+     "kind": "string"
+    },
+    {
+     "field": "instructions",
+     "column": "instructions",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "checkinLat",
+     "column": "checkin_lat",
+     "kind": "number"
+    },
+    {
+     "field": "checkinLng",
+     "column": "checkin_lng",
+     "kind": "number"
+    },
+    {
+     "field": "checkinAccuracy",
+     "column": "checkin_accuracy",
+     "kind": "number"
+    },
+    {
+     "field": "checkinAt",
+     "column": "checkin_at",
+     "kind": "date"
+    },
+    {
+     "field": "rescheduledToId",
+     "column": "rescheduled_to_id",
+     "kind": "string"
+    },
+    {
+     "field": "cancelReason",
+     "column": "cancel_reason",
+     "kind": "string"
+    },
+    {
+     "field": "assignedBy",
+     "column": "assigned_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdBy",
+     "column": "created_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "service_reports",
+   "schema": "leads",
+   "table": "service_reports",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "complaintId",
+     "column": "complaint_id",
+     "kind": "string"
+    },
+    {
+     "field": "visitId",
+     "column": "visit_id",
+     "kind": "string"
+    },
+    {
+     "field": "engineerId",
+     "column": "engineer_id",
+     "kind": "string"
+    },
+    {
+     "field": "diagnosis",
+     "column": "diagnosis",
+     "kind": "string"
+    },
+    {
+     "field": "actionTaken",
+     "column": "action_taken",
+     "kind": "string"
+    },
+    {
+     "field": "notes",
+     "column": "notes",
+     "kind": "string"
+    },
+    {
+     "field": "transcriptLang",
+     "column": "transcript_lang",
+     "kind": "string"
+    },
+    {
+     "field": "photos",
+     "column": "photos",
+     "kind": "json"
+    },
+    {
+     "field": "furtherAction",
+     "column": "further_action",
+     "kind": "string"
+    },
+    {
+     "field": "submittedAt",
+     "column": "submitted_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "service_visits",
+   "schema": "leads",
+   "table": "service_visits",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "complaintId",
+     "column": "complaint_id",
+     "kind": "string"
+    },
+    {
+     "field": "assignmentId",
+     "column": "assignment_id",
+     "kind": "string"
+    },
+    {
+     "field": "engineerId",
+     "column": "engineer_id",
+     "kind": "string"
+    },
+    {
+     "field": "scheduledDate",
+     "column": "scheduled_date",
+     "kind": "string"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "checkinLat",
+     "column": "checkin_lat",
+     "kind": "number"
+    },
+    {
+     "field": "checkinLng",
+     "column": "checkin_lng",
+     "kind": "number"
+    },
+    {
+     "field": "checkinAccuracy",
+     "column": "checkin_accuracy",
+     "kind": "number"
+    },
+    {
+     "field": "checkinAt",
+     "column": "checkin_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "system_settings",
+   "schema": "leads",
+   "table": "system_settings",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "key",
+     "column": "key",
+     "kind": "string"
+    },
+    {
+     "field": "value",
+     "column": "value",
+     "kind": "json"
+    },
+    {
+     "field": "description",
+     "column": "description",
+     "kind": "string"
+    },
+    {
+     "field": "updatedBy",
+     "column": "updated_by",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "visit_reports",
+   "schema": "leads",
+   "table": "visit_reports",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "visitId",
+     "column": "visit_id",
+     "kind": "string"
+    },
+    {
+     "field": "employeeId",
+     "column": "employee_id",
+     "kind": "string"
+    },
+    {
+     "field": "notes",
+     "column": "notes",
+     "kind": "string"
+    },
+    {
+     "field": "transcriptLang",
+     "column": "transcript_lang",
+     "kind": "string"
+    },
+    {
+     "field": "photos",
+     "column": "photos",
+     "kind": "json"
+    },
+    {
+     "field": "productRequirements",
+     "column": "product_requirements",
+     "kind": "json"
+    },
+    {
+     "field": "nextFollowupDate",
+     "column": "next_followup_date",
+     "kind": "string"
+    },
+    {
+     "field": "submittedAt",
+     "column": "submitted_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "whatsapp_logs",
+   "schema": "leads",
+   "table": "whatsapp_logs",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "event",
+     "column": "event",
+     "kind": "string"
+    },
+    {
+     "field": "recipient",
+     "column": "recipient",
+     "kind": "string"
+    },
+    {
+     "field": "template",
+     "column": "template",
+     "kind": "string"
+    },
+    {
+     "field": "payload",
+     "column": "payload",
+     "kind": "json"
+    },
+    {
+     "field": "status",
+     "column": "status",
+     "kind": "string"
+    },
+    {
+     "field": "providerMsgId",
+     "column": "provider_msg_id",
+     "kind": "string"
+    },
+    {
+     "field": "retries",
+     "column": "retries",
+     "kind": "number"
+    },
+    {
+     "field": "error",
+     "column": "error",
+     "kind": "string"
+    },
+    {
+     "field": "entity",
+     "column": "entity",
+     "kind": "string"
+    },
+    {
+     "field": "entityId",
+     "column": "entity_id",
+     "kind": "string"
+    },
+    {
+     "field": "nextRetryAt",
+     "column": "next_retry_at",
+     "kind": "date"
+    },
+    {
+     "field": "sentAt",
+     "column": "sent_at",
+     "kind": "date"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
+  },
+  {
+   "database": "movement_tracking",
+   "collection": "mobile_otps",
+   "schema": "leads",
+   "table": "mobile_otps",
+   "idKind": "objectId",
+   "managedBy": "sql",
+   "columns": [
+    {
+     "field": "companyId",
+     "column": "company_id",
+     "kind": "string"
+    },
+    {
+     "field": "mobile",
+     "column": "mobile",
+     "kind": "string"
+    },
+    {
+     "field": "purpose",
+     "column": "purpose",
+     "kind": "string"
+    },
+    {
+     "field": "otpHash",
+     "column": "otp_hash",
+     "kind": "string"
+    },
+    {
+     "field": "expiresAt",
+     "column": "expires_at",
+     "kind": "date"
+    },
+    {
+     "field": "attempts",
+     "column": "attempts",
+     "kind": "number"
+    },
+    {
+     "field": "maxAttempts",
+     "column": "max_attempts",
+     "kind": "number"
+    },
+    {
+     "field": "verifiedAt",
+     "column": "verified_at",
+     "kind": "date"
+    },
+    {
+     "field": "invalidatedAt",
+     "column": "invalidated_at",
+     "kind": "date"
+    },
+    {
+     "field": "deliveryStatus",
+     "column": "delivery_status",
+     "kind": "string"
+    },
+    {
+     "field": "createdAt",
+     "column": "created_at",
+     "kind": "date"
+    },
+    {
+     "field": "updatedAt",
+     "column": "updated_at",
+     "kind": "date"
+    }
+   ],
+   "indexes": []
   }
  ]
 };

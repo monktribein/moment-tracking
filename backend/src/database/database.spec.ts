@@ -18,7 +18,8 @@ describe("configureDatabase", () => {
     expect(options.poolMax).toBe(10);
     expect(options.ttlSweep).toBe(false);
     expect(options.registry.databases).toEqual({ movement_tracking: "leads" });
-    expect(options.registry.tables.map((t) => t.table).sort()).toEqual(
+    // Tables created by hand-written SQL migrations (managedBy "sql": Eco Sor) are registered too; this checks the model-backed ones.
+    expect(options.registry.tables.filter((t) => t.managedBy !== "sql").map((t) => t.table).sort()).toEqual(
       ["admin_users", "companies", "lead_attendances", "lead_location_pings", "lead_regions", "lead_users", "leads"],
     );
   });
