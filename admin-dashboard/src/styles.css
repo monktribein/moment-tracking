@@ -9,9 +9,13 @@
   --text: #111827;
   --text-2: #374151;
   --muted: #6b7280;
-  --primary: #4338ca;
-  --primary-hover: #3730a3;
-  --primary-soft: #eef0ff;
+  /* Eco Sor: blue primary, orange accent */
+  --primary: #1e40af;
+  --primary-hover: #1e3a8a;
+  --primary-soft: #eaf0ff;
+  --accent: #f97316;
+  --accent-hover: #ea580c;
+  --accent-soft: #fff1e6;
   --green: #15803d;
   --green-soft: #e8f7ee;
   --amber: #b45309;
@@ -22,8 +26,8 @@
   --blue-soft: #e8f0ff;
   --violet: #6d28d9;
   --violet-soft: #f2ebff;
-  --sidebar: #12142b;
-  --sidebar-2: #1d2040;
+  --sidebar: #0b1f4d;
+  --sidebar-2: #15306e;
   --radius: 12px;
   --radius-sm: 8px;
   --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
@@ -220,8 +224,9 @@ input[type="checkbox"] {
   background: var(--sidebar-2);
   color: #fff;
 }
+/* Eco Sor: the current page is marked in orange */
 .nav-item.active {
-  background: var(--primary);
+  background: var(--accent);
   color: #fff;
 }
 

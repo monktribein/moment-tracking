@@ -1,0 +1,435 @@
+/* Eco Sor screens: brand, KPI cards, timelines, calendar, portal. Built on the tokens in styles.css. */
+
+.eco-accent {
+  color: var(--accent);
+}
+.eco-logo {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), #fb923c 55%, var(--primary) 56%);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.eco-logo-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.btn-primary {
+  background: var(--primary);
+}
+.btn-accent,
+.btn.btn-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.nav-section {
+  margin: 14px 12px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8fa3d6;
+}
+.nav-entry:first-child .nav-section {
+  margin-top: 2px;
+}
+
+/* KPI cards: an orange or blue stripe like the Eco Sor ERP mock-ups */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  min-width: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.kpi.accent {
+  border-left-color: var(--accent);
+}
+.kpi.clickable {
+  cursor: pointer;
+}
+.kpi.clickable:hover {
+  box-shadow: var(--shadow-lg);
+}
+.kpi-label {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.kpi-value {
+  display: block;
+  font-size: 26px;
+  font-weight: 750;
+  margin-top: 4px;
+  color: var(--text);
+}
+.kpi-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Horizontal bars: counts by status */
+.hbars {
+  display: grid;
+  gap: 8px;
+}
+.hbar {
+  display: grid;
+  grid-template-columns: 150px 1fr 48px;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+.hbar-track {
+  height: 10px;
+  background: var(--primary-soft);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.hbar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 6px;
+}
+.hbar:nth-child(even) .hbar-fill {
+  background: var(--accent);
+}
+.hbar b {
+  text-align: right;
+}
+
+/* Timeline */
+.eco-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 4px;
+}
+.eco-timeline li {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 0 0 14px 0;
+}
+.eco-timeline li::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 14px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+.eco-timeline li:last-child::before {
+  display: none;
+}
+.eco-timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 4px;
+  background: var(--muted);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--surface);
+  z-index: 1;
+}
+.eco-tl-green .eco-timeline-dot { background: var(--green); }
+.eco-tl-amber .eco-timeline-dot { background: var(--accent); }
+.eco-tl-red .eco-timeline-dot { background: var(--red); }
+.eco-tl-blue .eco-timeline-dot,
+.eco-tl-indigo .eco-timeline-dot { background: var(--primary); }
+.eco-tl-violet .eco-timeline-dot { background: var(--violet); }
+.eco-timeline-title {
+  font-weight: 600;
+}
+
+.proof-view {
+  text-align: center;
+}
+.proof-view img {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.proof-preview {
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  display: block;
+  margin-top: 8px;
+}
+.product-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.filters select,
+.filters input {
+  width: auto;
+  min-width: 140px;
+}
+.filters .search input {
+  min-width: 200px;
+}
+
+.items-editor {
+  display: grid;
+  gap: 8px;
+}
+.item-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr 36px;
+  gap: 8px;
+  align-items: center;
+}
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+}
+
+/* Month calendar (visits, holidays) */
+.cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.cal-head {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px 0;
+}
+.cal-day {
+  min-height: 86px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.cal-day.other {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.cal-day.today {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.cal-date {
+  font-size: 12px;
+  font-weight: 700;
+}
+.cal-event {
+  display: block;
+  font-size: 11px;
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  border: 0;
+  width: 100%;
+  text-align: left;
+}
+.cal-event.holiday {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+.import-report td {
+  vertical-align: top;
+}
+.locked-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--violet-soft);
+  color: var(--violet);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+input.num-input {
+  width: 110px;
+  text-align: right;
+}
+
+/* ── Distributor portal: mobile first ───────────────────────────────────────── */
+.portal {
+  min-height: 100vh;
+  background: var(--bg);
+}
+.portal-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--sidebar);
+  color: #fff;
+}
+.portal-top .brand-name {
+  font-size: 15px;
+}
+.portal-top .spacer {
+  flex: 1;
+}
+.portal-top .icon-btn {
+  color: #fff;
+}
+.portal-nav {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 54px;
+  z-index: 19;
+}
+.portal-nav a {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: var(--text-2);
+  font-weight: 600;
+  text-decoration: none !important;
+}
+.portal-nav a.active {
+  background: var(--accent);
+  color: #fff;
+}
+.portal-main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px 14px 60px;
+}
+.portal-card-list {
+  display: grid;
+  gap: 10px;
+}
+.portal-request {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+.confirm-hero {
+  text-align: center;
+  padding: 28px 12px;
+}
+.confirm-hero .request-no {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 8px 0;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 760px) {
+  .item-row {
+    grid-template-columns: 1fr 80px 36px;
+  }
+  .item-row .item-remarks {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+  .hbar {
+    grid-template-columns: 110px 1fr 40px;
+  }
+  .cal-day {
+    min-height: 56px;
+  }
+  .cal-event {
+    font-size: 10px;
+  }
+  .filters select,
+  .filters input,
+  .filters .search input {
+    min-width: 0;
+    flex: 1 1 140px;
+  }
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+.link-button:hover {
+  text-decoration: underline;
+}

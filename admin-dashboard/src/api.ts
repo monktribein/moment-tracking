@@ -24,7 +24,8 @@ import type {
 /** The backend API base URL, e.g. http://localhost:5100/api (set VITE_API_URL to change it). */
 export const API_URL = String(import.meta.env.VITE_API_URL || "http://localhost:5100/api").replace(/\/+$/, "");
 
-export type SessionKind = "admin" | "staff";
+/** admin: console (platform owner, Super Admin). staff: lead executives. eco: Eco Sor users (/api/v1). */
+export type SessionKind = "admin" | "staff" | "eco";
 interface StoredSession {
   kind: SessionKind;
   token: string;
@@ -45,7 +46,7 @@ let session: StoredSession | null = (() => {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     const parsed = raw ? (JSON.parse(raw) as StoredSession) : null;
-    return parsed?.token && (parsed.kind === "admin" || parsed.kind === "staff") ? parsed : null;
+    return parsed?.token && (parsed.kind === "admin" || parsed.kind === "staff" || parsed.kind === "eco") ? parsed : null;
   } catch {
     return null;
   }
@@ -66,19 +67,48 @@ export function onUnauthorized(handler: (() => void) | null): void {
   onSessionEnded = handler;
 }
 
-type Query = Record<string, string | number | boolean | null | undefined>;
+export type Query = Record<string, string | number | boolean | null | undefined>;
 
-async function request<T>(
-  path: string,
-  options: { method?: string; body?: unknown; query?: Query; auth?: boolean } = {},
-): Promise<T> {
-  const { method = "GET", body, query, auth = true } = options;
+export interface RequestOptions {
+  method?: string;
+  body?: unknown;
+  /** multipart/form-data body (file uploads). */
+  form?: FormData;
+  query?: Query;
+  auth?: boolean;
+  headers?: Record<string, string>;
+}
+
+export interface PageMeta {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return (await send<T>(path, options)).data as T;
+}
+
+/** A paged /api/v1 list: the rows plus page, limit and total. */
+export async function requestPage<T>(path: string, options: RequestOptions = {}): Promise<{ items: T[]; meta: PageMeta } & Record<string, unknown>> {
+  const payload = await send<T[]>(path, options);
+  const { data, meta, success: _s, ...rest } = payload as unknown as { data: T[]; meta: PageMeta; success: boolean } & Record<string, unknown>;
+  return { ...rest, items: data ?? [], meta: meta ?? { page: 1, limit: data?.length ?? 0, total: data?.length ?? 0, pages: 1 } };
+}
+
+/** Any API call (data only). */
+export const apiRequest = request;
+
+async function send<T>(path: string, options: RequestOptions = {}): Promise<{ success?: boolean; data?: T; message?: string | string[] } & Record<string, unknown>> {
+  const { method = "GET", body, form, query, auth = true } = options;
   const url = new URL(API_URL + path);
   for (const [key, value] of Object.entries(query ?? {}))
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
 
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (body !== undefined && !form) headers["Content-Type"] = "application/json";
+  Object.assign(headers, options.headers ?? {});
   const sent = auth ? session : null;
   if (sent) headers.Authorization = `Bearer ${sent.token}`;
 
@@ -87,14 +117,14 @@ async function request<T>(
     response = await fetch(url, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: form ?? (body === undefined ? undefined : JSON.stringify(body)),
       cache: "no-store",
     });
   } catch {
     throw new ApiError(`Cannot reach the server (${API_URL}). Check that the backend is running.`, 0);
   }
 
-  let payload: { success?: boolean; data?: T; message?: string | string[] } | null = null;
+  let payload: ({ success?: boolean; data?: T; message?: string | string[] } & Record<string, unknown>) | null = null;
   try {
     payload = await response.json();
   } catch {
@@ -114,7 +144,36 @@ async function request<T>(
     const message = Array.isArray(raw) ? raw.join(". ") : raw;
     throw new ApiError(message || `Request failed (${response.status})`, response.status);
   }
-  return payload?.data as T;
+  return payload ?? {};
+}
+
+/** Downloads a file (e.g. a CSV report) with the signed-in token and saves it. */
+export async function apiDownload(path: string, query: Query, filename: string): Promise<void> {
+  const url = new URL(API_URL + path);
+  for (const [key, value] of Object.entries(query)) if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+  const response = await fetch(url, { headers: session ? { Authorization: `Bearer ${session.token}` } : {}, cache: "no-store" });
+  if (response.status === 401) {
+    setSession(null);
+    onSessionEnded?.();
+    throw new ApiError("Your session has ended. Please sign in again.", 401);
+  }
+  if (!response.ok) {
+    let message = `Download failed (${response.status})`;
+    try {
+      message = (await response.json()).message ?? message;
+    } catch {
+      /* not JSON */
+    }
+    throw new ApiError(message, response.status);
+  }
+  const blob = await response.blob();
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
 const enc = encodeURIComponent;
