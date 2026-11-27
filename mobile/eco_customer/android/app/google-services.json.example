@@ -1,0 +1,3 @@
+{
+  "_comment": "Put the real google-services.json from the Firebase console next to this file (android/app/google-services.json) to turn on push notifications. See mobile/README.md."
+}

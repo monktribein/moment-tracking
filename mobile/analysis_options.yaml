@@ -18,6 +18,10 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # The Eco Sor apps are separate Flutter packages with their own pubspec and analysis_options.
+    - eco_core/**
+    - eco_employee/**
+    - eco_customer/**
 
 linter:
   # The lint rules applied to this project can be customized in the
